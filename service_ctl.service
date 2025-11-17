@@ -1,0 +1,13 @@
+# https://blog.miguelgrinberg.com/post/running-a-flask-application-as-a-service-with-systemd
+[Unit]
+Description=Service Manager
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/locutus/code/signals_box_ctl
+ExecStart=/home/ubuntu/microblog/venv/bin/gunicorn -b 0.0.0.0:8080 -w 4 signals_box_ctl:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

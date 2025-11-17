@@ -1,0 +1,40 @@
+# logging.yaml
+# ------------------------------------------------------------------
+#  Logging configuration – writes to a rotating file *and* to the console
+# ------------------------------------------------------------------
+
+version: 1                      # logging config schema version
+disable_existing_loggers: false # keep any other loggers that might already exist
+
+# ------------------------------------------------------------------
+#  Formatters
+# ------------------------------------------------------------------
+formatters:
+  detailed:
+    format: "%(asctime)s.%(msecs)03d | %(levelname)-8s | %(module)s:%(lineno)d | %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+# ------------------------------------------------------------------
+#  Handlers
+# ------------------------------------------------------------------
+handlers:
+  file:
+    class: logging.handlers.RotatingFileHandler
+    filename: logs/app.log              # <-- change as you wish
+    maxBytes: 5242880                   # 5 MiB  (adjust if you need more)
+    backupCount: 5
+    encoding: utf-8
+    level: DEBUG                        # logs everything DEBUG+ into the file
+    formatter: detailed
+
+  console:
+    class: logging.StreamHandler
+    level: INFO                          # console shows INFO+ only
+    formatter: detailed
+
+# ------------------------------------------------------------------
+#  Root logger (the one you get with logging.getLogger() without a name)
+# ------------------------------------------------------------------
+root:
+  level: DEBUG                          # overall root level
+  handlers: [file, console]             # both handlers are attached to root
