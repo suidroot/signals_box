@@ -23,12 +23,11 @@ This is a work in progress.
 
 ## TODO
 ### Hardware
-- [] Power System
+- [ ] Power System
 
 ### Control Software
-- [] Service Manager
-- [] API Implenentation
+- [ ] Service Manager
+- [ ] API Implenentation
 
 ### System
-- [] Network Bridge Setup
-- [] Ansible Build Script
+- [ ] Ansible Build Script

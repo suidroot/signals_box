@@ -3,6 +3,15 @@
 
 #librtlsdr-dev librtlsdr0
 sudo apt update
+
+nmcli connection add type bridge con-name bridge0 ifname bridge0
+nmcli connection modify bridge0 ipv4.method auto
+nmcli con mod br0 bridge.stp no
+nmcli connection add type ethernet slave-type bridge con-name bridge0-port1 ifname enp1s0 master bridge0
+nmcli connection add type ethernet slave-type bridge con-name bridge0-port2 ifname enp2s0 master bridge0
+nmcli connection add type ethernet slave-type bridge con-name bridge0-port3 ifname enp3s0 master bridge0
+nmcli connection add type ethernet slave-type bridge con-name bridge0-port4 ifname enp4s0 master bridge0
+
 sudo apt install libusb-1.0-0-dev git cmake build-essential pkg-config python3-venv
 sudo apt install debhelper
 
@@ -38,7 +47,7 @@ echo "deb [signed-by=/etc/apt/keyrings/lime-microsystems-public.gpg] https://rep
 sudo apt-get update
 sudo apt-get install limesuiteng
 
-# https://www.kismetwireless.net/packages/
+# Kismet https://www.kismetwireless.net/packages/
 wget -O - https://www.kismetwireless.net/repos/kismet-release.gpg.key --quiet | gpg --dearmor | sudo tee /usr/share/keyrings/kismet-archive-keyring.gpg >/dev/null
 echo 'deb [signed-by=/usr/share/keyrings/kismet-archive-keyring.gpg] https://www.kismetwireless.net/repos/apt/release/jammy jammy main' | sudo tee /etc/apt/sources.list.d/kismet.list >/dev/null
 sudo apt update
