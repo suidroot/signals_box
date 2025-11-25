@@ -3,6 +3,24 @@ http_base_url: http://signals.local
 pid_file_location: ""
 
 services:
+    icecase:
+        system_ctl_name: icecast2.service
+        type: systemd
+        description: Icecast
+        link: http://signals.local:8000
+        configmethod: null          # no config method defined
+        current_status: false
+        autostart: false
+        require_sdr: false
+    darkice:
+        system_ctl_name: darkice.service
+        type: systemd
+        description: Darkice
+        link: null
+        configmethod: null          # no config method defined
+        current_status: false
+        autostart: false
+        require_sdr: false
     kismet:
         system_ctl_name: kismet.service
         type: systemd
