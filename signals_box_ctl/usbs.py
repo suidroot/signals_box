@@ -59,6 +59,7 @@ class UsbDevices:
 
     @staticmethod
     def get_rtlsdr_device_number(serial_no):
+        """ Get RTL-SDR Device number mapping from the device's serial number. """
         return RtlSdr.get_device_index_by_serial(str(serial_no))
 
     def describe_device(self, dev: usb.core.Device) -> Dict[str, str]:
