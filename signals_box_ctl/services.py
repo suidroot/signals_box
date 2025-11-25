@@ -3,6 +3,8 @@
 This module contains the main class for managing services.
 """
 
+# TODO: Make CLI app managment more robust and persistent
+
 from typing import Dict, List, Optional, Any
 import logging
 import subprocess
