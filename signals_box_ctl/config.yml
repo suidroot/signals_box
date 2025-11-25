@@ -3,39 +3,49 @@ http_base_url: http://signals.local
 pid_file_location: ""
 
 services:
-  kismet:
-      system_ctl_name: kismet.service
-      type: systemd
-      description: Kismet
-      link: http://signals.local:2501
-      configmethod: null          # no config method defined
-      current_status: false
-      autostart: false
-      require_sdr: false
-  pagermon_server:
-      type: cli
-      description: Pagermon Server
-      cmd_line: "/home/locutus/pagermon/start.sh"
-      working_dir: /home/locutus/pagermon
-      autostart: false
-      require_sdr: false
-      link: "http://signals.local:3000/"
-  pagermon_client1:
-      type: cli
-      description: Pagermon Client 152.592M
-      cmd_line: "/home/locutus/pagermon/client/reader_alt.sh 1 152.592M"
-      working_dir: /home/locutus/pagermon/client
-      autostart: false
-      require_sdr: true
-      link: null
-  pagermon_client2:
-      type: cli
-      description: Pagermon Client 929.612M
-      cmd_line: "/home/locutus/pagermon/client/reader_alt.sh 2 929.612M"
-      working_dir: /home/locutus/pagermon/client
-      autostart: false
-      require_sdr: true
-      link: null
+    kismet:
+        system_ctl_name: kismet.service
+        type: systemd
+        description: Kismet
+        link: http://signals.local:2501
+        configmethod: null          # no config method defined
+        current_status: false
+        autostart: false
+        require_sdr: false
+    openwebex:
+        type: systemd
+        system_ctl_name: openwebrx.service
+        description: "Openwebex+"
+        link: "http://signals.local:8073"
+        configmethod: null
+        current_status: false
+        autostart: false
+        require_sdr: false
+    pagermon_server:
+        type: docker
+        container_name: pagermon
+        description: Pagermon Server
+        cmd_line: "/home/locutus/pagermon/start.sh"
+        working_dir: "/home/locutus/pagermon"
+        autostart: false
+        require_sdr: false
+        link: "http://signals.local:3000/"
+    pagermon_client1:
+        type: cli
+        description: Pagermon Client 152.592M
+        cmd_line: "/home/locutus/pagermon/client/reader_alt.sh 1 152.592M"
+        working_dir: /home/locutus/pagermon/client
+        autostart: false
+        require_sdr: true
+        link: null
+    pagermon_client2:
+        type: cli
+        description: Pagermon Client 929.612M
+        cmd_line: "/home/locutus/pagermon/client/reader_alt.sh 2 929.612M"
+        working_dir: /home/locutus/pagermon/client
+        autostart: false
+        require_sdr: true
+        link: null
 
 links:
   - id: vnc

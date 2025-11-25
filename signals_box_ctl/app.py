@@ -9,7 +9,7 @@
 import logging
 import logging.config
 import yaml
-from services import SystemdServiceManager, CliService
+from services import SystemdServiceManager, CliService, DockerService
 from usbs import UsbDevices
 from flask import Flask, request, redirect, url_for, render_template
 
@@ -39,6 +39,7 @@ class SignalsManager:
             self.http_base_url = cfg['http_base_url']
             self.links = cfg['links']
             self.systemd_svc_mgr = SystemdServiceManager()
+            self.docker_svc_mgr = DockerService()
 
     def get_all_service_status(self):
         
@@ -56,6 +57,17 @@ class SignalsManager:
 
                 else:
                     self.services[service_id]['current_status'] = False
+            elif self.services[service_id]['type'] == "docker":
+                status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
+
+                if status_data:
+                    if status_data == 'running':
+                        self.services[service_id]['current_status'] = True
+                    else:
+                        self.services[service_id]['current_status'] = False
+
+                else:
+                    self.services[service_id]['current_status'] = False 
 
             elif self.services[service_id]['type'] == "cli":
 
@@ -83,6 +95,18 @@ class SignalsManager:
                     status = "unavailable"
             else:
                 status = "unavailable"
+        elif self.services[service_id]['type'] == "docker":
+                status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
+
+                if status_data:
+                    if status_data == 'running':
+                        status = True
+                    else:
+                        status = False
+
+                else:
+                    status = False 
+
 
         elif self.services[service_id]['type'] == "cli":
 
@@ -97,7 +121,8 @@ class SignalsManager:
 
         if self.services[service_id]['type'] == "systemd":
             self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
-
+        elif self.services[service_id]['type'] == "docker":
+            self.docker_svc_mgr.start_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
                     self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
@@ -111,6 +136,8 @@ class SignalsManager:
 
         if self.services[service_id]['type'] == "systemd":
             self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
+        elif self.services[service_id]['type'] == "docker":
+            self.docker_svc_mgr.stop_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
                     self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])

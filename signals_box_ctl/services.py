@@ -8,6 +8,8 @@ import shlex
 import threading
 import atexit
 from typing import Dict, Optional, Any, List
+import docker
+import docker.errors
 
 logger = logging.getLogger(__name__)
 
@@ -350,3 +352,69 @@ class CliService:
 
     def __str__(self) -> str:
         return f"{self.id} ({self.description}) - {self.type} - {self.cmd_line}"
+
+class DockerService:
+
+    def __init__(self):
+        self.docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+
+    def start_service(self, container_name: str) -> None:
+        """Start the unit with the given name."""
+        status = None
+
+        try:
+            container = self.docker_client.containers.get(container_name)
+
+            status = container.start()
+        except docker.errors.NotFound:
+            print(f"🛑  {container_name} not found")
+            status = False
+
+        return status
+
+
+    def stop_service(self, container_name: str) -> None:
+        """Stop the unit."""
+        status = None
+
+        try:
+            container = self.docker_client.containers.get(container_name)
+            status = container.stop()
+        except docker.errors.NotFound:
+            print(f"🛑  {container_name} not found")
+            status = False
+
+        return status
+
+
+    def restart_service(self, container_name: str) -> None:
+        """Restart the unit."""
+
+        status = None
+
+        try:
+            container = self.docker_client.containers.get(container_name)
+            status = container.restart()
+        except docker.errors.NotFound:
+            print(f"🛑  {container_name} not found")
+            status = False
+
+        return status
+
+
+    def status_service(self, container_name: str) -> None:
+        """Print a concise status summary of the unit."""
+        status = None
+
+        try:
+            container = self.docker_client.containers.get(container_name)
+
+            container_state = container.attrs['State']
+
+            status = container_state['Status']
+        except docker.errors.NotFound:
+            print(f"🛑  {container_name} not found")
+            status = False
+
+        return status
+
