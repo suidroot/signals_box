@@ -1,10 +1,12 @@
 # pylint: disable=line-too-long
 #!/usr/bin/env python3
-# TODO: something kismet API - https://github.com/kismetwireless/python-kismet-rest
+# TODO: Build Application API handler
+# TODO: Add kismet API application - https://github.com/kismetwireless/python-kismet-rest
 # https://www.kismetwireless.net/docs/api/datasources/
 # TODO: device setup handlers
-# TODO: build out processes exec handler (eg: pagermon client or other nont-systemd programs)
 # TODO: by serial number radio setting eg: PPM
+# TODO: better handle service status - eg: running, stopped, etc.
+# TODO: Convert to API for processing 
 
 """
 This is a Flash app to manage SDR related services and applications
