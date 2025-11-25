@@ -26,7 +26,6 @@ This is a work in progress.
 - [ ] Power System
 
 ### Control Software
-- [ ] Service Manager
 - [ ] API Implenentation
 
 ### System
