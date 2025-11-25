@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+
+"""
+Handler methods for collecing SDR USB devices
+"""
+
 from typing import Dict, Tuple, List
 import logging
 import sys
@@ -31,6 +37,9 @@ SDR_IDS: Dict[Tuple[int, int], str] = {
 }
 
 class UsbDevices:
+    """
+    A class to manage USB devices and their properties.
+    """
 
     def __init__(self):
         self.sdr_ids = SDR_IDS
@@ -69,7 +78,7 @@ class UsbDevices:
         # Try to find a friendly name for the dongle
         friendly = self.sdr_ids.get((vid, pid), f"Unknown VID:PID 0x{vid:04x}:0x{pid:04x}")
 
-        
+
 
         return {
             "VID": f"0x{vid:04x}",
@@ -88,7 +97,6 @@ class UsbDevices:
         Enumerate all USB devices and return a list of dicts for those that match
         the known RTL‑SDR IDs.
         """
-        # FIXME: maybe need to include device number
         devices = usb.core.find(find_all=True)  # type: ignore
         rtlsdr_list = []
 

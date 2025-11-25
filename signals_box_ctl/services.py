@@ -1,24 +1,34 @@
-from typing import Dict, Tuple, List, Optional
+#!/usr/bin/env python3
+"""
+This module contains the main class for managing services.
+"""
+
+from typing import Dict, List, Optional, Any
 import logging
-# import fnmatch
 import subprocess
-import dbus
-from dbus.exceptions import DBusException
 import shlex
 import threading
 import atexit
-from typing import Dict, Optional, Any, List
-import docker
-import docker.errors
+import dbus
+from dbus.exceptions import DBusException
+
+
+try:
+    import docker
+    import docker.errors
+except ImportError as e:
+    raise Exception ("Docker not installed on system")
 
 logger = logging.getLogger(__name__)
 
 
 class SystemdServiceManager:
+    """
+    Manages services using systemd. 
+    """
 
     def __init__(self):
         self.bus = self.get_bus(False)
-        pass
 
     # --------------------------------------------------------------------------- #
     # D‑Bus helpers
@@ -184,7 +194,7 @@ class CliService:
         the *params* namespace for placeholder replacement.
     """
 
-    def __init__(self, id, config: Dict[str, Any]) -> None:
+    def __init__(self, svc_id, config: Dict[str, Any]) -> None:
         if not isinstance(config, dict):
             raise TypeError("config must be a dict")
 
@@ -194,7 +204,7 @@ class CliService:
                 raise ValueError(f"Missing required config key: {key}")
 
         # Basic attributes
-        self.id: str = id
+        self.svc_id: str = svc_id
         self.type: str = config["type"]
         self.description: str = config["description"]
         self.cmd_line: str = config["cmd_line"]
@@ -204,7 +214,9 @@ class CliService:
 
         # All remaining keys are treated as optional params for placeholder replacement
         self.params: Dict[str, Any] = {k: v for k, v in config.items()
-                                      if k not in {"id", "type", "description", "cmd_line", "autostart", "require_sdr"}}
+                                      if k not in {"svc_id", "type", \
+                                                   "description", "cmd_line", \
+                                                    "autostart", "require_sdr"}}
 
         # Internal state
         self._proc: Optional[subprocess.Popen] = None
@@ -215,7 +227,7 @@ class CliService:
 
         # Auto‑start if requested
         if self.autostart:
-            logger.info("Autostart enabled – launching service '%s'", self.id)
+            logger.info("Autostart enabled – launching service '%s'", self.svc_id)
             self.start()
 
     # ------------------------------------------------------------------ #
@@ -227,19 +239,19 @@ class CliService:
         orphaned processes around.
         """
         if self.is_running():
-            logger.debug("Cleaning up service '%s' on exit", self.id)
+            logger.debug("Cleaning up service '%s' on exit", self.svc_id)
             self.stop()
 
     def _ensure_not_running(self) -> None:
         logger.debug("Checking Process Lock")
         if self.is_running():
-            raise RuntimeError(f"Service '{self.id}' is already running")
+            raise RuntimeError(f"Service '{self.svc_id}' is already running")
 
     def _ensure_running(self) -> None:
         logger.debug("Checking Process Lock")
 
         if not self.is_running():
-            raise RuntimeError(f"Service '{self.id}' is not running")
+            raise RuntimeError(f"Service '{self.svc_id}' is not running")
 
     # ------------------------------------------------------------------ #
     # Public API
@@ -260,7 +272,7 @@ class CliService:
             full_cmd = _substitute_placeholders(self.cmd_line, self.params)
             cmd_parts = _parse_command(full_cmd)
 
-            logger.info("Starting service '%s': %s", self.id, cmd_parts)
+            logger.info("Starting service '%s': %s", self.svc_id, cmd_parts)
 
             try:
                 # Use stdout/stderr = subprocess.PIPE so that the
@@ -275,13 +287,13 @@ class CliService:
                 )
             except Exception as exc:
                 self._proc = None
-                logger.exception("Failed to start service '%s'", self.id)
-                raise RuntimeError(f"Could not start service '{self.id}': {exc}") from exc
+                logger.exception("Failed to start service '%s'", self.svc_id)
+                raise RuntimeError(f"Could not start service '{self.svc_id}': {exc}") from exc
 
             # Optionally: spawn a thread that logs the output.
             threading.Thread(
                 target=self._log_process_output,
-                name=f"{self.id}-stdout-logger",
+                name=f"{self.svc_id}-stdout-logger",
                 daemon=True,
             ).start()
 
@@ -295,7 +307,7 @@ class CliService:
 
         def _log_pipe(pipe, level):
             for line in iter(pipe.readline, ""):
-                logger.log(level, "[%s] %s", self.id, line.rstrip())
+                logger.log(level, "[%s] %s", self.svc_id, line.rstrip())
 
         if self._proc.stdout:
             threading.Thread(target=_log_pipe,
@@ -321,18 +333,18 @@ class CliService:
             # self._ensure_running()
             assert self._proc is not None
 
-            logger.info("Stopping service '%s'", self.id)
+            logger.info("Stopping service '%s'", self.svc_id)
             try:
                 self._proc.terminate()   # sends SIGTERM
                 try:
                     self._proc.wait(timeout=timeout)
                 except subprocess.TimeoutExpired:
-                    logger.warning("Service '%s' did not terminate in %s sec – killing", self.id, timeout)
+                    logger.warning("Service '%s' did not terminate in %s sec – killing", self.svc_id, timeout)
                     self._proc.kill()
                     self._proc.wait()
             finally:
                 self._proc = None
-                logger.info("Service '%s' stopped", self.id)
+                logger.info("Service '%s' stopped", self.svc_id)
 
     def is_running(self) -> bool:
         """
@@ -348,18 +360,21 @@ class CliService:
     # ------------------------------------------------------------------ #
     def __repr__(self) -> str:
         status = "RUNNING" if self.is_running() else "STOPPED"
-        return f"<CliService id={self.id!r} status={status}>"
+        return f"<CliService id={self.svc_id!r} status={status}>"
 
     def __str__(self) -> str:
-        return f"{self.id} ({self.description}) - {self.type} - {self.cmd_line}"
+        return f"{self.svc_id} ({self.description}) - {self.type} - {self.cmd_line}"
 
 class DockerService:
+    """
+    Manage Services that are hosted in Docker
+    """
 
     def __init__(self):
         self.docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
     def start_service(self, container_name: str) -> None:
-        """Start the unit with the given name."""
+        """Start the container with the given name."""
         status = None
 
         try:
@@ -374,7 +389,7 @@ class DockerService:
 
 
     def stop_service(self, container_name: str) -> None:
-        """Stop the unit."""
+        """Stop the container."""
         status = None
 
         try:
@@ -388,7 +403,7 @@ class DockerService:
 
 
     def restart_service(self, container_name: str) -> None:
-        """Restart the unit."""
+        """Restart the container."""
 
         status = None
 
@@ -403,7 +418,7 @@ class DockerService:
 
 
     def status_service(self, container_name: str) -> None:
-        """Print a concise status summary of the unit."""
+        """Print a concise status summary of the container."""
         status = None
 
         try:
@@ -418,3 +433,6 @@ class DockerService:
 
         return status
 
+
+if __name__ == "__main__":
+    pass

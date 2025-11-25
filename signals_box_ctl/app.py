@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 #!/usr/bin/env python3
 # TODO: something kismet API - https://github.com/kismetwireless/python-kismet-rest
 # https://www.kismetwireless.net/docs/api/datasources/
@@ -5,13 +6,17 @@
 # TODO: build out processes exec handler (eg: pagermon client or other nont-systemd programs)
 # TODO: by serial number radio setting eg: PPM
 
+"""
+This is a Flash app to manage SDR related services and applications
+"""
+
 
 import logging
 import logging.config
 import yaml
+from flask import Flask, request, render_template
 from services import SystemdServiceManager, CliService, DockerService
 from usbs import UsbDevices
-from flask import Flask, request, redirect, url_for, render_template
 
 
 app = Flask(__name__)
@@ -22,18 +27,28 @@ with open("logging.yml", "r", encoding="utf-8") as f:
 # Apply the config
 logging.config.dictConfig(config)
 logger = logging.getLogger(__name__)
-# logger = logging.basicConfig(level=logging.DEBUG)
 
 class SignalsManager:
+    """
+    Class containing all of the functionality for service management and USB management
+
+    :var value: Description
+    :vartype value: Any
+    """
 
     def __init__(self, config_file="config.yml"):
         self.config_file = config_file
         self.load_config()
 
     def load_config(self):
+        """
+        Load configuration from file and store in class variables
+
+        :param self: Description
+        """
         logger.debug("Loading config file: %s", self.config_file)
 
-        with open(self.config_file, "r" ) as file_handle:
+        with open(self.config_file, "r", encoding="utf-8") as file_handle:
             cfg = yaml.safe_load(file_handle)
             self.services = cfg['services']
             self.http_base_url = cfg['http_base_url']
@@ -42,9 +57,14 @@ class SignalsManager:
             self.docker_svc_mgr = DockerService()
 
     def get_all_service_status(self):
-        
+        """
+        Get a list of the status for all configured services
+
+        :param self: Description
+        """
+
         logger.debug("Getting all service status")
-        for index, service_id  in enumerate(self.services):
+        for _, service_id  in enumerate(self.services):
 
             if self.services[service_id]['type'] == "systemd":
                 status_data = self.systemd_svc_mgr.status_service(self.services[service_id]['system_ctl_name'])
@@ -65,9 +85,8 @@ class SignalsManager:
                         self.services[service_id]['current_status'] = True
                     else:
                         self.services[service_id]['current_status'] = False
-
                 else:
-                    self.services[service_id]['current_status'] = False 
+                    self.services[service_id]['current_status'] = False
 
             elif self.services[service_id]['type'] == "cli":
 
@@ -76,9 +95,13 @@ class SignalsManager:
 
                 self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
 
-        return 
-    
     def get_single_service_status(self, service_id):
+        """
+        Get the status of a single service
+
+        :param self: Description
+        :param service_id: Description
+        """
 
         status = "not set"
         status_data = None
@@ -96,16 +119,16 @@ class SignalsManager:
             else:
                 status = "unavailable"
         elif self.services[service_id]['type'] == "docker":
-                status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
+            status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
 
-                if status_data:
-                    if status_data == 'running':
-                        status = True
-                    else:
-                        status = False
-
+            if status_data:
+                if status_data == 'running':
+                    status = True
                 else:
-                    status = False 
+                    status = False
+
+            else:
+                status = False
 
 
         elif self.services[service_id]['type'] == "cli":
@@ -118,6 +141,13 @@ class SignalsManager:
         return status, status_data
 
     def start_service(self, service_id):
+        """
+        Start a service and return its status.
+        This is a wrapper for the various managers that are responsible for starting and stopping services.
+
+        :param self: Description
+        :param service_id: Description
+        """
 
         if self.services[service_id]['type'] == "systemd":
             self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
@@ -125,7 +155,7 @@ class SignalsManager:
             self.docker_svc_mgr.start_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
-                    self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
+                self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
 
             self.services[service_id]['cli_status_obj'].start()
 
@@ -133,6 +163,13 @@ class SignalsManager:
 
 
     def stop_service(self, service_id):
+        """
+        Stop a service and return its status.
+        This is a wrapper for the various managers that are responsible for starting and stopping services.
+
+        :param self: Description
+        :param service_id: Description
+        """
 
         if self.services[service_id]['type'] == "systemd":
             self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
@@ -140,23 +177,41 @@ class SignalsManager:
             self.docker_svc_mgr.stop_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
-                    self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
+                self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
 
             self.services[service_id]['cli_status_obj'].stop()
 
-        return self.get_single_service_status(self.services[service_id])
+        return self.get_single_service_status(service_id)
 
+    ### SDR
+    @staticmethod
+    def get_all_sdrs():
+        """
+        Gather list of all SDRs
+        """
 
-
-    ### SDR 
-    def get_all_sdrs(self):
         usb_dev = UsbDevices()
         return usb_dev.list_rtlsdr_devices()
 
 
 ######## HTML Rendered
 def render_sdr_list(usb_dev_list):
-    table_rows = []
+    """
+    Render HTML table of Detected SDR Devices
+
+    :param usb_dev_list: Description
+    :return: Description
+    :rtype: Any
+    """
+    table_rows = [
+        """<tr>
+            <th>Manufacturer</th>
+            <th>Product</th>
+            <th>Serial Number</th>
+            <th>Rtl Sdr ID</th>
+            <th>Status</th>
+        </tr>"""
+    ]
 
     for sdr_entry in usb_dev_list:
 
@@ -175,6 +230,9 @@ def render_sdr_list(usb_dev_list):
     return ''.join(table_rows)
 
 def render_sdr_drop_list(usb_dev_list, name):
+    """
+    Render HTML Drop down list of SDR detected on the system.
+    """
 
     selection = f"<select NAME=\"{name}\">\n"
 
@@ -185,13 +243,18 @@ def render_sdr_drop_list(usb_dev_list, name):
 
     return selection
 
-def render_service_toggles(manager):
-    usb_dev_list = manager.get_all_sdrs()
+def render_service_toggles(redner_manager):
+    """
+    Docstring for render_service_toggles
+
+    :param redner_manager: Description
+    """
+    usb_dev_list = redner_manager.get_all_sdrs()
 
     table_rows = []
-    for index, service_id in enumerate(manager.services):
-        status, _ = manager.get_single_service_status(service_id)
-        manager.services[service_id]['current_status'] = status
+    for _, service_id in enumerate(redner_manager.services):
+        status, _ = redner_manager.get_single_service_status(service_id)
+        redner_manager.services[service_id]['current_status'] = status
 
 
         if status == "unavailable":
@@ -203,12 +266,12 @@ def render_service_toggles(manager):
         else:
             color = "#f0f0f0"   # grey
 
-        if manager.services[service_id]['link']:
-            link = f"<a href=\"{manager.services[service_id]['link']}\" target=\"_blank\">{manager.services[service_id]['description']}</a>"
+        if redner_manager.services[service_id]['link']:
+            link = f"<a href=\"{redner_manager.services[service_id]['link']}\" target=\"_blank\">{redner_manager.services[service_id]['description']}</a>"
         else:
             link = ""
 
-        if manager.services[service_id]['require_sdr']:
+        if redner_manager.services[service_id]['require_sdr']:
             sdr_selection = render_sdr_drop_list(usb_dev_list, service_id)
         else:
             sdr_selection = ""
@@ -216,7 +279,7 @@ def render_service_toggles(manager):
         row = f"""
         <tr>
             <td style="background:{color}; width:2%">&nbsp;</td>
-            <td style="width:20%"><strong>{manager.services[service_id]['description']}</strong></td>
+            <td style="width:20%"><strong>{redner_manager.services[service_id]['description']}</strong></td>
             <td style="width:20%">{status}</td>
             <td style="width:20%">{sdr_selection}</td>
             <td style="width:20%">{link}</td>
@@ -238,8 +301,11 @@ manager = SignalsManager()
 # --------------------------------------------------------------------
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """
+    Handle Flash requests for index page
+    """
     usb_dev_list = manager.get_all_sdrs()
-    
+
     output = ""
 
     if request.method == "POST":
@@ -250,14 +316,10 @@ def index():
             manager.stop_service(request.form['stop'])
         elif "start" in request.form:
             output += f"Starting {request.form['start']}"
-            manager.start_service(request.form['start'])       
+            manager.start_service(request.form['start'])
         elif "reload_config" in request.form:
-            output += f"Reloading Config File"
+            output += "Reloading Config File"
             manager.load_config()
-
-        # start Services
-        # Stop Services
-            
 
     links_table = ""
     links_table = '<p name="links">\n'
@@ -269,7 +331,6 @@ def index():
     sdrlist = render_sdr_list(usb_dev_list)
 
     return render_template('index.html', cmd_output=output, sdrlist=sdrlist, service_rows=service_rows, links_table=links_table)
-    # return render_template_string(page)
 
 if __name__ == "__main__":
     # 8080 is the same port that the original PHP page used.
