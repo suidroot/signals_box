@@ -1,3 +1,5 @@
 flask
 dbus-python
 pyusb
+pyrtlsdr
+docker

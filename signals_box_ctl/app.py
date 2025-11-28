@@ -174,7 +174,7 @@ class SignalsManager:
         """
 
         if self.services[service_id]['type'] == "systemd":
-            self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
+            self.systemd_svc_mgr.stop_service(self.services[service_id]['system_ctl_name'])
         elif self.services[service_id]['type'] == "docker":
             self.docker_svc_mgr.stop_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
