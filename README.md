@@ -16,10 +16,23 @@ This is a work in progress.
 - 1x LimeSDR Mini v1
 - CC2531 - Zigbee and IEEE 802.15.4 wireless MCU with up to 256kB Flash and 8kB RAM
 - [Bluefruit LE Sniffer - Bluetooth®Low Energy 4.0 - nRF5182 \[Firmware Version 2\] : ID 2269 : Adafruit Industries, Unique & fun DIY electronics and kits](https://www.adafruit.com/product/2269)
-- USBGear 7-Port USB 3.2 Gen 1 
+- -OLD: USBGear 7-Port USB 3.2 Gen 1 - Had power feedback issues-
+- New: https://www.startech.com/en-us/usb-hubs/st7300usbme
 - LeMotech Mounting Plate for Junction Box
 - [2800 Weatherproof Protective Case, Medium, Orange](https://www.harborfreight.com/2800-weatherproof-protective-case-medium-orange-58655.html)
 - [Qotom X86 Mini PC Q190G4N](https://www.aliexpress.com/i/3256804930512617.html)
+
+## Signal_ctl - Device and service Manager
+
+![WIP image 11-21-25](git_images/signal_ctl-251128.png)
+
+This tool can use used to start and stop services, manage USB devices, and control other applications. It is designed to be a simple tool for managing your Multi SDR setup. Supported service types:
+- systemd
+- docker
+- cli (command line)
+
+It will list SDR devices and the Rtl-Sdr device numbers if relavent. 
+
 
 ## TODO
 ### Hardware
