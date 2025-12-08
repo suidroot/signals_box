@@ -1,12 +1,12 @@
 # https://blog.miguelgrinberg.com/post/running-a-flask-application-as-a-service-with-systemd
 [Unit]
-Description=Service Manager
+Description=RF Service Manager
 After=network.target
 
 [Service]
-User=ubuntu
-WorkingDirectory=/home/locutus/code/signals_box_ctl
-ExecStart=/home/ubuntu/microblog/venv/bin/gunicorn -b 0.0.0.0:8080 -w 4 signals_box_ctl:app
+WorkingDirectory=/opt/signals_box_ctl
+ExecStart=/opt/signals_box_ctl/signals/bin/gunicorn -b 0.0.0.0:8080 -w 4 wsgi:app
+Environment="PATH=/opt/signals_box_ctl/signals/bin/"
 Restart=always
 
 [Install]

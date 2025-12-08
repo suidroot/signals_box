@@ -3,3 +3,7 @@ dbus-python
 pyusb
 pyrtlsdr
 docker
+gunicorn
+pyyaml
+setuptools
+wheel

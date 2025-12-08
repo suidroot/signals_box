@@ -16,6 +16,7 @@ This is a Flash app to manage SDR related services and applications
 import logging
 import logging.config
 import yaml
+import subprocess
 from flask import Flask, request, render_template
 from services import SystemdServiceManager, CliService, DockerService
 from usbs import UsbDevices
@@ -55,6 +56,8 @@ class SignalsManager:
             self.services = cfg['services']
             self.http_base_url = cfg['http_base_url']
             self.links = cfg['links']
+            self.buttons = cfg['buttons']
+
             self.systemd_svc_mgr = SystemdServiceManager()
             self.docker_svc_mgr = DockerService()
 
@@ -260,13 +263,13 @@ def render_service_toggles(redner_manager):
 
 
         if status == "unavailable":
-            color = "#f0f0f0"   # grey
+            color = "#2727F5"   # blue
         elif not status:
-            color = "#f8d7da"   # red
+            color = "#F52727"  # red #f8d7da
         elif status:
-            color = "#d4edda"   # green
+            color = "#27F527"   # green
         else:
-            color = "#f0f0f0"   # grey
+            color = "#2727F5"   # blue
 
         if redner_manager.services[service_id]['link']:
             link = f"<a href=\"{redner_manager.services[service_id]['link']}\" target=\"_blank\">{redner_manager.services[service_id]['description']}</a>"
@@ -295,6 +298,16 @@ def render_service_toggles(redner_manager):
 
     return ''.join(table_rows)
 
+def render_buttons(buttons):
+    # <button onClick="window.location.reload();" class="btn">Refresh Page</button>
+    #   <button type="submit" name="reload_config">Reload Config</button>
+    button_text = ""
+    for _, button_data in enumerate(buttons):
+        button_text += f"<button {button_data['command']} name={button_data['name']} class=\"btn\">{button_data['text']}</button>\n"
+    button_text += "</p>\n"
+
+    return button_text
+
 
 manager = SignalsManager()
 
@@ -322,6 +335,8 @@ def index():
         elif "reload_config" in request.form:
             output += "Reloading Config File"
             manager.load_config()
+        elif "shutdown" in request.form:
+            subprocess.run(["/usr/sbin/shutdown", "now"])
 
     links_table = ""
     links_table = '<p name="links">\n'
@@ -331,10 +346,12 @@ def index():
 
     service_rows = render_service_toggles(manager)
     sdrlist = render_sdr_list(usb_dev_list)
+    button_text = render_buttons(manager.buttons)
 
-    return render_template('index.html', cmd_output=output, sdrlist=sdrlist, service_rows=service_rows, links_table=links_table)
+    return render_template('index.html', cmd_output=output, sdrlist=sdrlist, \
+        service_rows=service_rows, links_table=links_table, buttons=button_text)
 
 if __name__ == "__main__":
     # 8080 is the same port that the original PHP page used.
     # Run with:  sudo python3 app.py
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8081, debug=False)

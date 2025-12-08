@@ -30,9 +30,8 @@
       <h3>Service links</h3>
       {{ links_table | safe }}
       <br/>
-      <button onClick="window.location.reload();" class="btn">Refresh Page</button>
-      <button type="submit" name="reload_config">Reload Config</button>
-
+      {{ buttons | safe }}
+      
       <!--<button type="submit" name="reboot" class="btn">Reboot</button>
       <button type="submit" name="shutdown" class="btn">Shutdown</button>
       <button type="submit" name="save" class="btn">Save Configs</button> -->

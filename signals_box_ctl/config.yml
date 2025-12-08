@@ -12,15 +12,15 @@ services:
         current_status: false
         autostart: false
         require_sdr: false
-    darkice:
-        system_ctl_name: darkice.service
-        type: systemd
-        description: Darkice
-        link: null
-        configmethod: null          # no config method defined
-        current_status: false
-        autostart: false
-        require_sdr: false
+    # darkice:
+    #     system_ctl_name: darkice.service
+    #     type: systemd
+    #     description: Darkice
+    #     link: null
+    #     configmethod: null          # no config method defined
+    #     current_status: false
+    #     autostart: false
+    #     require_sdr: false
     kismet:
         system_ctl_name: kismet.service
         type: systemd
@@ -30,6 +30,7 @@ services:
         current_status: false
         autostart: false
         require_sdr: false
+    # If installed and systemd service
     # openwebex:
     #     type: systemd
     #     system_ctl_name: openwebrx.service
@@ -73,6 +74,20 @@ services:
         autostart: false
         require_sdr: true
         link: null
+
+buttons:
+  - name: "refresh_page" 
+    text: "Refresh Page"
+    command: "onClick=\"window.location.reload();\""
+  - name: "reload_config" 
+    text: "Reload Config"
+    command: "type=\"submit\""
+  - name: "shutdown" 
+    text: "Shutdown"
+    command: "type=\"submit\""
+  - name: "reboot" 
+    text: "Reboot"
+    command: "type=\"submit\""
 
 links:
   - id: vnc
