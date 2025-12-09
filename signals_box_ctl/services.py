@@ -14,12 +14,16 @@ import atexit
 import dbus
 from dbus.exceptions import DBusException
 
+try:
+    import kismet_rest
+except ImportError as e:
+    raise Exception ("kismet_rest not installed on system")
 
 try:
     import docker
     import docker.errors
 except ImportError as e:
-    raise Exception ("Docker not installed on system")
+    raise Exception ("docker API not installed on system")
 
 logger = logging.getLogger(__name__)
 
@@ -435,6 +439,48 @@ class DockerService:
 
         return status
 
+class KismetStatus:
+    def __init__(self) -> None:
+        self.datasources = {}
+        self.kismet_datasources = None
+
+        try:
+            self.kismet_datasources = kismet_rest.Datasources()
+            self.kismet_datasources.login()
+            self.get_active_datasources()
+
+        except kismet_rest.exceptions.KismetLoginException:
+            logger.critical("Kismet login failed")
+    def get_active_datasources(self):
+        """Get the list of available data sources."""
+        datasources = []
+
+        for source in self.kismet_datasources.all():
+            name = source['kismet.datasource.capture_interface']
+            sdr_id = -1
+
+            if name.startswith('rtl'):
+                data_type, sdr_id = name.split('-')
+
+            self.datasources[name] = {
+                'is_running' : bool(source['kismet.datasource.running']),
+                'data_type': data_type,
+                'driver_info': source['kismet.datasource.type_driver'],
+                'sdr_id' : int(sdr_id),
+                'uuid' : source['kismet.datasource.uuid'],
+            }
+
+    def get_all_datasources(self):
+        """Get the list of available data sources."""
+        datasources = []
+        # for source in self.kismet_datasources.interfaces():
+        pass
+
+    def lookup_by_sdr_id(self, sdr_id):
+        """Look up a datasource by its ID."""
+        for name, info in self.datasources.items():
+            if info['sdr_id'] == sdr_id:
+                return info['data_type']
 
 if __name__ == "__main__":
     pass

@@ -75,11 +75,8 @@ class UsbDevices:
         except:
             rtl_id = "na"
 
-
         # Try to find a friendly name for the dongle
         friendly = self.sdr_ids.get((vid, pid), f"Unknown VID:PID 0x{vid:04x}:0x{pid:04x}")
-
-
 
         return {
             "VID": f"0x{vid:04x}",
@@ -90,7 +87,8 @@ class UsbDevices:
             "Serial": serial_str,
             "Bus": dev.bus,
             "Address": dev.address,
-            "Rtl Id": rtl_id
+            "Rtl Id": rtl_id,
+            "status": "Unknown"
         }
 
     def list_rtlsdr_devices(self) -> List[Dict[str, str]]:

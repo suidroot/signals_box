@@ -18,7 +18,7 @@ import logging.config
 import yaml
 import subprocess
 from flask import Flask, request, render_template
-from services import SystemdServiceManager, CliService, DockerService
+from services import SystemdServiceManager, CliService, DockerService, KismetStatus
 from usbs import UsbDevices
 
 
@@ -41,6 +41,7 @@ class SignalsManager:
 
     def __init__(self, config_file="config.yml"):
         self.config_file = config_file
+        self.sdr_data = None
         self.load_config()
 
     def load_config(self):
@@ -110,7 +111,7 @@ class SignalsManager:
 
         status = "not set"
         status_data = None
-        logger.debug("Refreshing Service Status for service: %s")
+        logger.debug("Refreshing Service Status for service: %s", service_id)
 
         if self.services[service_id]['type'] == "systemd":
 
@@ -189,15 +190,27 @@ class SignalsManager:
         return self.get_single_service_status(service_id)
 
     ### SDR
-    @staticmethod
-    def get_all_sdrs():
+    def get_all_sdrs(self):
         """
         Gather list of all SDRs
         """
 
         usb_dev = UsbDevices()
-        return usb_dev.list_rtlsdr_devices()
+        self.sdr_data = usb_dev.list_rtlsdr_devices()
+        self.update_sdr_status()
 
+        return self.sdr_data
+
+    def update_sdr_status(self):
+
+        if 'kismet' in self.services and self.services['kismet']['current_status'] == "active":
+            kismet_mgr = KismetStatus()
+
+            for index, sdr_entry in enumerate(self.sdr_data):
+                kismet_result = kismet_mgr.lookup_by_sdr_id(sdr_entry['Rtl Id'])
+
+                if kismet_result:
+                    self.sdr_data[index]['status'] = f"Kismet: {kismet_result}"
 
 ######## HTML Rendered
 def render_sdr_list(usb_dev_list):
@@ -224,10 +237,10 @@ def render_sdr_list(usb_dev_list):
         row = f"""
         <tr>
             <td style="width:20%">{sdr_entry['Manufacturer']}</strong></td>
-            <td style="width:40%">{sdr_entry['Product']}</td>
-            <td style="width:40%">{sdr_entry['Serial']}</td>
-            <td style="width:40%">{sdr_entry['Rtl Id']}</td>
-            <td style="width:40%">Status Unk</td>
+            <td style="width:20%">{sdr_entry['Product']}</td>
+            <td style="width:20%">{sdr_entry['Serial']}</td>
+            <td style="width:5%">{sdr_entry['Rtl Id']}</td>
+            <td style="width:10%">{sdr_entry['status']}</td>
         </tr>
         """
         table_rows.append(row)
@@ -265,6 +278,10 @@ def render_service_toggles(redner_manager):
         if status == "unavailable":
             color = "#2727F5"   # blue
         elif not status:
+            color = "grey"  # red #f8d7da
+        elif status == 'inactive':
+            color = "grey"  # red #f8d7da
+        elif status == 'failed':
             color = "#F52727"  # red #f8d7da
         elif status:
             color = "#27F527"   # green

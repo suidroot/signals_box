@@ -5,6 +5,7 @@ sudo apt update
 
 sudo apt install -y git curl vim htop net-tools python3-pip python3-setuptools virtualenvwrapper docker.io docker-compose 
 
+sudo apt install gpsd gpsd-clients gpsd-tools
 # dbus-python build
 sudo apt install libglib2.0-dev libdbus-1-dev
 # Rpi
@@ -107,3 +108,15 @@ sudo mkdir -p /opt/owrx-docker/var /opt/owrx-docker/etc /opt/owrx-docker/plugins
 
 ### 
 sudo apt install python3-flask python3-usb python3-dbus
+
+
+## ACARS
+### libacars
+# https://github.com/szpajder/libacars/releases/tag/
+sudo apt install zlib1g-dev libxml2-dev libjansson-dev
+
+### acarsdec
+git cloen https://github.com/f00b4r0/acarsdec.git
+mkdir build
+cd build
+cmake ../
