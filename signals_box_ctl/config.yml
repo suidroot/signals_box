@@ -77,16 +77,16 @@ services:
 buttons:
   - name: "refresh_page" 
     text: "Refresh Page"
-    command: "onClick=\"window.location.reload();\""
+    html_command: "onClick=\"window.location.reload();\""
   - name: "reload_config" 
     text: "Reload Config"
-    command: "type=\"submit\""
+    html_command: "type=\"submit\""
   - name: "shutdown" 
     text: "Shutdown"
-    command: "type=\"submit\""
+    html_command: "type=\"submit\""
   - name: "reboot" 
     text: "Reboot"
-    command: "type=\"submit\""
+    html_command: "type=\"submit\""
 
 links:
   - id: vnc
