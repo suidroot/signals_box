@@ -30,16 +30,6 @@ services:
         current_status: false
         autostart: false
         require_sdr: false
-    # If installed and systemd service
-    # openwebex:
-    #     type: systemd
-    #     system_ctl_name: openwebrx.service
-    #     description: "Openwebex+"
-    #     link: "http://signals.local:8073"
-    #     configmethod: null
-    #     current_status: false
-    #     autostart: false
-    #     require_sdr: false
     openwebex:
         type: docker
         container_name: owrx-mbe
@@ -48,7 +38,9 @@ services:
         configmethod: null
         current_status: false
         autostart: false
-        require_sdr: false   
+        default_sdr: '77771111153705700'
+        selected_sdr: '77771111153705700'
+        require_sdr: true
     pagermon_server:
         type: docker
         container_name: pagermon
@@ -56,6 +48,7 @@ services:
         cmd_line: ""
         working_dir: "/opt/pagermon"
         autostart: false
+        current_status: false
         require_sdr: false
         link: "http://signals.local:3000/"
     pagermon_client1:
@@ -64,7 +57,10 @@ services:
         cmd_line: "/opt/pagermon/client/reader_alt.sh 1 152.592M"
         working_dir: /opt/pagermon/client
         autostart: false
+        current_status: false
         require_sdr: true
+        default_sdr: null
+        selected_sdr: null
         link: null
     pagermon_client2:
         type: cli
@@ -72,6 +68,9 @@ services:
         cmd_line: "/home/locutus/pagermon/client/reader_alt.sh 2 929.612M"
         working_dir: /home/locutus/pagermon/client
         autostart: false
+        current_status: false
+        default_sdr: null
+        selected_sdr: null
         require_sdr: true
         link: null
 

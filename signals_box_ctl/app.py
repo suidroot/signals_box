@@ -1,15 +1,15 @@
 # pylint: disable=line-too-long
 #!/usr/bin/env python3
 # TODO: Build Application API handler
-# TODO: Add kismet API application - https://github.com/kismetwireless/python-kismet-rest
-# https://www.kismetwireless.net/docs/api/datasources/
 # TODO: device setup handlers
 # TODO: by serial number radio setting eg: PPM
 # TODO: better handle service status - eg: running, stopped, etc.
-# TODO: Convert to API for processing 
+# TODO: Fix up out processes exec handler (eg: pagermon client or other nont-systemd programs)
+# TODO: add reset status option
+# TODO: Update radio selection when running
 
 """
-This is a Flash app to manage SDR related services and applications
+This app is used to manage SDR related services and applications
 """
 
 
@@ -39,8 +39,9 @@ class SignalsManager:
     :vartype value: Any
     """
 
-    def __init__(self, config_file="config.yml"):
+    def __init__(self, config_file="config.yml", creds_file="creds.yml"):
         self.config_file = config_file
+        self.creds_file = creds_file
         self.sdr_data = None
         self.load_config()
 
@@ -61,6 +62,10 @@ class SignalsManager:
 
             self.systemd_svc_mgr = SystemdServiceManager()
             self.docker_svc_mgr = DockerService()
+
+        with open(self.creds_file, "r", encoding="utf-8") as credfile_handle:
+            creds = yaml.safe_load(credfile_handle)
+            self.creds = creds
 
     def get_all_service_status(self):
         """
@@ -204,13 +209,21 @@ class SignalsManager:
     def update_sdr_status(self):
 
         if 'kismet' in self.services and self.services['kismet']['current_status'] == "active":
-            kismet_mgr = KismetStatus()
+            kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
 
             for index, sdr_entry in enumerate(self.sdr_data):
                 kismet_result = kismet_mgr.lookup_by_sdr_id(sdr_entry['Rtl Id'])
 
                 if kismet_result:
                     self.sdr_data[index]['status'] = f"Kismet: {kismet_result}"
+
+        for service_entry in self.services:
+            if self.services[service_entry]['require_sdr']:
+                if self.services[service_entry]['current_status'] or \
+                    self.services[service_entry]['current_status'] == 'active':
+                    for index, sdr_entry in enumerate(self.sdr_data):
+                        if sdr_entry['Serial'] == str(self.services[service_entry]['selected_sdr']):
+                            self.sdr_data[index]['status'] = f"Used by {self.services[service_entry]['description']}"
 
 ######## HTML Rendered
 def render_sdr_list(usb_dev_list):
@@ -247,32 +260,38 @@ def render_sdr_list(usb_dev_list):
 
     return ''.join(table_rows)
 
-def render_sdr_drop_list(usb_dev_list, name):
+def render_sdr_drop_list(usb_dev_list, name, select_default=None):
     """
     Render HTML Drop down list of SDR detected on the system.
     """
 
     selection = f"<select NAME=\"{name}\">\n"
+    selection += f"""<option value="" disabled>Select SDR</option>\n"""
 
     for sdr_entry in usb_dev_list:
-        selection += f"""<option value="{sdr_entry['Serial']}">{sdr_entry['Manufacturer']} {sdr_entry['Product']} {sdr_entry['Serial']}</option>\n"""
+        selected = ""
+
+        if select_default and sdr_entry['Serial'] == select_default:
+            selected = " selected"
+
+        selection += f"""<option value="{sdr_entry['Serial']}"{selected}>{sdr_entry['Manufacturer']} {sdr_entry['Product']} {sdr_entry['Serial']}</option>\n"""
 
     selection += "</select>"
 
     return selection
 
-def render_service_toggles(redner_manager):
+def render_service_toggles(render_manager):
     """
     Docstring for render_service_toggles
 
-    :param redner_manager: Description
+    :param render_manager: Description
     """
-    usb_dev_list = redner_manager.get_all_sdrs()
+    usb_dev_list = render_manager.get_all_sdrs()
 
     table_rows = []
-    for _, service_id in enumerate(redner_manager.services):
-        status, _ = redner_manager.get_single_service_status(service_id)
-        redner_manager.services[service_id]['current_status'] = status
+    for _, service_id in enumerate(render_manager.services):
+        status, _ = render_manager.get_single_service_status(service_id)
+        render_manager.services[service_id]['current_status'] = status
 
 
         if status == "unavailable":
@@ -288,20 +307,24 @@ def render_service_toggles(redner_manager):
         else:
             color = "#2727F5"   # blue
 
-        if redner_manager.services[service_id]['link']:
-            link = f"<a href=\"{redner_manager.services[service_id]['link']}\" target=\"_blank\">{redner_manager.services[service_id]['description']}</a>"
+        if render_manager.services[service_id]['link']:
+            link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
         else:
             link = ""
 
-        if redner_manager.services[service_id]['require_sdr']:
-            sdr_selection = render_sdr_drop_list(usb_dev_list, service_id)
+        if render_manager.services[service_id]['require_sdr']:
+            if 'default_sdr' in render_manager.services[service_id]:
+                sdr_selection = render_sdr_drop_list(usb_dev_list, service_id, \
+                    select_default=render_manager.services[service_id]['default_sdr'])
+            else:
+                sdr_selection = render_sdr_drop_list(usb_dev_list, service_id)
         else:
             sdr_selection = ""
 
         row = f"""
         <tr>
             <td style="background:{color}; width:2%">&nbsp;</td>
-            <td style="width:20%"><strong>{redner_manager.services[service_id]['description']}</strong></td>
+            <td style="width:20%"><strong>{render_manager.services[service_id]['description']}</strong></td>
             <td style="width:20%">{status}</td>
             <td style="width:20%">{sdr_selection}</td>
             <td style="width:20%">{link}</td>

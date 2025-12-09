@@ -2,3 +2,4 @@ __pycache__
 *.log.*
 *.log
 .DS_Store
+signals_box_ctl/creds.yml

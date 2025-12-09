@@ -440,12 +440,15 @@ class DockerService:
         return status
 
 class KismetStatus:
-    def __init__(self) -> None:
+    def __init__(self, username, password) -> None:
         self.datasources = {}
         self.kismet_datasources = None
+        self.username = username
+        self.password = password
+
 
         try:
-            self.kismet_datasources = kismet_rest.Datasources()
+            self.kismet_datasources = kismet_rest.Datasources(username=self.username, password=self.password)
             self.kismet_datasources.login()
             self.get_active_datasources()
 
