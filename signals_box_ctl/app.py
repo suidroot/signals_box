@@ -1,15 +1,17 @@
 # pylint: disable=line-too-long
 #!/usr/bin/env python3
+
 # TODO: Build Application API handler
+# SDR Device
 # TODO: device setup handlers
 # TODO: by serial number radio setting eg: PPM
+# Services
 # TODO: better handle service status - eg: running, stopped, etc.
 # TODO: Fix up out processes exec handler (eg: pagermon client or other nont-systemd programs)
 # TODO: add reset status option
-# TODO: Update radio selection when running
 
 """
-This app is used to manage SDR related services and applications
+    This app is used to manage SDR related services and applications
 """
 
 import logging
