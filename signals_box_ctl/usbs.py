@@ -25,11 +25,11 @@ logger = logging.getLogger(__name__)
 
 
 SDR_IDS: Dict[Tuple[int, int], str] = {
-    (0x0bda, 0x8176): "RTL2832U (generic RTL‑SDR)",
-    (0x0bda, 0x8177): "RTL2832U (generic RTL‑SDR)",
+    (0x0bda, 0x8176): "RTL2832U (generic RTL-SDR)",
+    (0x0bda, 0x8177): "RTL2832U (generic RTL-SDR)",
     (0x1d50, 0x6067): "CubicSDR (Cubic Research)",
-    (0x1d50, 0x6079): "CubicSDR (Cubic Research) – newer firmware",
-    (0x054c, 0x06e5): "Xunlong (RTL‑SDR) – USB‑3.0 adapter",
+    (0x1d50, 0x6079): "CubicSDR (Cubic Research) - newer firmware",
+    (0x054c, 0x06e5): "Xunlong (RTL-SDR) - USB-3.0 adapter",
     (0x0bda, 0x2832): "RTL2832U Generic",
     (0x0403, 0x601f): "LimeSDR Mini",
     (0x0bda, 0x2838): "RTLSDRBlog v4",
