@@ -88,7 +88,7 @@ class UsbDevices:
             "Bus": dev.bus,
             "Address": dev.address,
             "Rtl Id": rtl_id,
-            "status": "Unknown"
+            "status": ""
         }
 
     def list_rtlsdr_devices(self) -> List[Dict[str, str]]:
