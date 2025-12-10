@@ -93,27 +93,28 @@ def render_service_toggles(render_manager):
 
     :param render_manager: Description
     """
+
+    statuses = {
+        "unavailable"   : "#2727F5", # blue
+        'unknown'       : "#2727F5", # blue
+        'running'       : "#27F527", # green
+        'stopping'      : "grey",
+        'stopped'       : "#F52727", # red #f8d7da
+    }
+
     usb_dev_list = render_manager.get_all_sdrs()
 
-    table_rows = ["<tr><th></th><th>Service</th><th>Status</th><th>Select SDR</th><th>Link</th><th>Actions</th></tr>"]
+    table_rows = ["<tr><th></th><th>Service</th><th>Status</th><th>Select SDR</th><th>Freq</th><th>Link</th><th>Actions</th></tr>"]
     for _, service_id in enumerate(render_manager.services):
 
         set_radio_button = ""
+        freq_input = ""
 
         status, _ = render_manager.get_single_service_status(service_id)
         render_manager.services[service_id]['current_status'] = status
 
-
-        if status == "unavailable":
-            color = "#2727F5"   # blue
-        elif not status:
-            color = "grey"  # red #f8d7da
-        elif status == 'inactive':
-            color = "grey"  # red #f8d7da
-        elif status == 'failed':
-            color = "#F52727"  # red #f8d7da
-        elif status:
-            color = "#27F527"   # green
+        if status in statuses:
+            color = statuses[status]
         else:
             color = "#2727F5"   # blue
 
@@ -129,6 +130,10 @@ def render_service_toggles(render_manager):
             else:
                 sdr_selection = render_sdr_drop_list(usb_dev_list, service_id)
 
+            if 'freq_input' in render_manager.services[service_id]:
+                freq_value = render_manager.services[service_id]['freq_input']
+                freq_input = f"<input type=\"text\" name=\"freq_{service_id}\", value=\"{freq_value}\" size=\"11\"></input>"
+
             set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\">Set Radio</button>"            
         else:
             sdr_selection = ""
@@ -137,8 +142,9 @@ def render_service_toggles(render_manager):
         <tr>
             <td style="background:{color}; width:2%">&nbsp;</td>
             <td style="width:20%"><strong>{render_manager.services[service_id]['description']}</strong></td>
-            <td style="width:20%">{status}</td>
+            <td style="width:10%">{status}</td>
             <td style="width:20%">{sdr_selection}</td>
+            <td style="width:10%">{freq_input}</td>
             <td style="width:20%">{link}</td>
             <td style="width:20%" align="right">
                 <button type="submit" name="start" value="{service_id}">Start</button>
@@ -191,7 +197,9 @@ def index():
             output += "Reloading Config File"
             manager.load_config()
         elif "shutdown" in request.form:
-            subprocess.run(["/usr/sbin/shutdown", "now"])
+            subprocess.run(manager.buttons['shutdown']['cli_comand'])
+        elif "reboot" in request.form:
+            subprocess.run(manager.buttons['reboot']['cli_comand'])
 
     links_table = ""
     links_table = '<p name="links">\n'

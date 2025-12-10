@@ -91,11 +91,17 @@ class SignalsManager:
         """
         Get the status of a single service
 
+        statues
+        - running
+        - stopped
+        - stopping
+        - unknown
+
         :param self: Description
         :param service_id: Description
         """
 
-        status = "not set"
+        status = "unknown"
         status_data = None
         logger.debug("Refreshing Service Status for service: %s", service_id)
 
@@ -104,23 +110,29 @@ class SignalsManager:
             status_data = self.systemd_svc_mgr.status_service(self.services[service_id]['system_ctl_name'])
 
             if status_data:
-                if status_data.get('ActiveState'):
-                    status = status_data.get('ActiveState')
+                active_state = status_data.get('ActiveState')
+                if active_state == 'active':
+                    status = 'running'
+                    # status = status_data.get('ActiveState')
+                elif active_state == 'deactivating':
+                    status = "stopping"
+                elif active_state == 'inactive':
+                    status = "stopped"
                 else:
-                    status = "unavailable"
+                    status = "unknown"
             else:
-                status = "unavailable"
+                status = "unknown"
         elif self.services[service_id]['type'] == "docker":
             status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
 
             if status_data:
                 if status_data == 'running':
-                    status = True
+                    status = 'running'
                 else:
-                    status = False
+                    status = 'stopped'
 
             else:
-                status = False
+                status = 'unknown'
 
 
         elif self.services[service_id]['type'] == "cli":
@@ -128,7 +140,13 @@ class SignalsManager:
             if not 'cli_status_obj' in self.services[service_id]:
                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
             self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
-            status = self.services[service_id]['current_status']
+            
+            if self.services[service_id]['current_status']:
+                status = 'running'
+            else:
+                status = "stopped"
+
+            # status = self.services[service_id]['current_status']
 
         return status, status_data
 

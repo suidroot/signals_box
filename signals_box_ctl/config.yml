@@ -9,7 +9,7 @@ services:
         description: Icecast
         link: http://signals.local:8000
         configmethod: null          # no config method defined
-        current_status: false
+        current_status: null
         autostart: false
         require_sdr: false
     # darkice:
@@ -27,7 +27,7 @@ services:
         description: Kismet
         link: http://signals.local:2501
         configmethod: null          # no config method defined
-        current_status: false
+        current_status: null
         autostart: false
         require_sdr: false
     openwebex:
@@ -36,7 +36,7 @@ services:
         description: "Openwebex+"
         link: "http://signals.local:8073"
         configmethod: null
-        current_status: false
+        current_status: null
         autostart: false
         default_sdr: '77771111153705700'
         selected_sdr: '77771111153705700'
@@ -48,7 +48,7 @@ services:
         cmd_line: ""
         working_dir: "/opt/pagermon"
         autostart: false
-        current_status: false
+        current_status: null
         require_sdr: false
         link: "http://signals.local:3000/"
     pagermon_client1:
@@ -57,21 +57,23 @@ services:
         cmd_line: "/opt/pagermon/client/reader_alt.sh 1 152.592M"
         working_dir: /opt/pagermon/client
         autostart: false
-        current_status: false
+        current_status: null
         require_sdr: true
+        freq_input: ""
         default_sdr: null
         selected_sdr: null
         link: null
     pagermon_client2:
         type: cli
         description: Pagermon Client 929.612M
-        cmd_line: "/home/locutus/pagermon/client/reader_alt.sh 2 929.612M"
-        working_dir: /home/locutus/pagermon/client
+        cmd_line: "/opt/signals_box_ctl/pagermon_client.sh 2 929.612M"
+        working_dir: /opt/pagermon/client
         autostart: false
-        current_status: false
+        current_status: null
         default_sdr: null
         selected_sdr: null
         require_sdr: true
+        freq_input: 929.612M
         link: null
 
 buttons:
@@ -84,9 +86,11 @@ buttons:
   - name: "shutdown" 
     text: "Shutdown"
     html_command: "type=\"submit\""
+    cli_command: ["/usr/sbin/shutdown", "now"]
   - name: "reboot" 
     text: "Reboot"
     html_command: "type=\"submit\""
+    cli_command: ["/usr/sbin/reboot"]
 
 links:
   - id: vnc
