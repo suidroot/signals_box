@@ -1,12 +1,10 @@
 # pylint: disable=line-too-long
 #!/usr/bin/env python3
 
-# TODO: Build Application API handler
 # SDR Device
 # TODO: device setup handlers
 # TODO: by serial number radio setting eg: PPM
 # Services
-# TODO: better handle service status - eg: running, stopped, etc.
 # TODO: Fix up out processes exec handler (eg: pagermon client or other nont-systemd programs)
 # TODO: add reset status option
 
@@ -16,8 +14,8 @@
 
 import logging
 import logging.config
-import yaml
 import subprocess
+import yaml
 from flask import Flask, request, render_template
 from signalsmanager import SignalsManager
 # from services import SystemdServiceManager, CliService, DockerService, KismetStatus
@@ -73,7 +71,7 @@ def render_sdr_drop_list(usb_dev_list, name, select_default=None):
     """
 
     selection = f"<select NAME=\"sdr_{name}\">\n"
-    selection += f"""<option value="">Select SDR</option>\n"""
+    selection += """<option value="">Select SDR</option>\n"""
 
     for sdr_entry in usb_dev_list:
         selected = ""
@@ -112,11 +110,7 @@ def render_service_toggles(render_manager):
 
         status, _ = render_manager.get_single_service_status(service_id)
         render_manager.services[service_id]['current_status'] = status
-
-        if status in statuses:
-            color = statuses[status]
-        else:
-            color = "#2727F5"   # blue
+        color = statuses.get(status, "#2727F5")
 
         if render_manager.services[service_id]['link']:
             link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
@@ -134,7 +128,7 @@ def render_service_toggles(render_manager):
                 freq_value = render_manager.services[service_id]['freq_input']
                 freq_input = f"<input type=\"text\" name=\"freq_{service_id}\", value=\"{freq_value}\" size=\"11\"></input>"
 
-            set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\">Set Radio</button>"            
+            set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\">Set Radio</button>"
         else:
             sdr_selection = ""
 
@@ -158,8 +152,10 @@ def render_service_toggles(render_manager):
     return ''.join(table_rows)
 
 def render_buttons(buttons):
-    # <button onClick="window.location.reload();" class="btn">Refresh Page</button>
-    #   <button type="submit" name="reload_config">Reload Config</button>
+    '''
+        Generate HTML for buttons
+    '''
+
     button_text = ""
     for _, button_data in enumerate(buttons):
         button_text += f"<button {button_data['html_command']} name={button_data['name']} class=\"btn\">{button_data['text']}</button>\n"

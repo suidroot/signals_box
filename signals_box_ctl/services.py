@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 #!/usr/bin/env python3
 """
 This module contains the main class for managing services.
@@ -17,13 +18,13 @@ from dbus.exceptions import DBusException
 try:
     import kismet_rest
 except ImportError as e:
-    raise Exception ("kismet_rest not installed on system")
+    raise Exception ("kismet_rest not installed on system") from e
 
 try:
     import docker
     import docker.errors
 except ImportError as e:
-    raise Exception ("docker API not installed on system")
+    raise Exception ("docker API not installed on system") from e
 
 logger = logging.getLogger(__name__)
 
@@ -439,12 +440,21 @@ class DockerService:
         return status
 
 class KismetStatus:
+    '''
+        Get Status from Kismet for Datasources
+    '''
+
     def __init__(self, username, password) -> None:
+        '''
+            Initthe class
+            :param username: The username to use when connecting to Kismet
+            :param password: The password to use when connecting to
+
+        '''
         self.datasources = {}
         self.kismet_datasources = None
         self.username = username
         self.password = password
-
 
         try:
             self.kismet_datasources = kismet_rest.Datasources(username=self.username, password=self.password)
@@ -453,11 +463,13 @@ class KismetStatus:
 
         except kismet_rest.exceptions.KismetLoginException:
             logger.critical("Kismet login failed")
+
     def get_active_datasources(self):
         """Get the list of available data sources."""
-        datasources = []
 
         for source in self.kismet_datasources.all():
+            data_type = ""
+            
             name = source['kismet.datasource.capture_interface']
             sdr_id = -1
 
@@ -472,17 +484,20 @@ class KismetStatus:
                 'uuid' : source['kismet.datasource.uuid'],
             }
 
-    def get_all_datasources(self):
-        """Get the list of available data sources."""
-        datasources = []
-        # for source in self.kismet_datasources.interfaces():
-        pass
+    # def get_all_datasources(self):
+    #     """Get the list of available data sources."""
+    #     datasources = []
+    #     # for source in self.kismet_datasources.interfaces():
+    #     pass
 
     def lookup_by_sdr_id(self, sdr_id):
         """Look up a datasource by its ID."""
-        for name, info in self.datasources.items():
+        for _, info in self.datasources.items():
             if info['sdr_id'] == sdr_id:
-                return info['data_type']
+                ret_val = info['data_type']
+                break
+
+        return ret_val
 
 if __name__ == "__main__":
     pass

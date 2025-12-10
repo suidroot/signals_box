@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 #!/usr/bin/env python3
 """
 This module contains the main class for managing services.
@@ -140,7 +141,7 @@ class SignalsManager:
             if not 'cli_status_obj' in self.services[service_id]:
                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
             self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
-            
+
             if self.services[service_id]['current_status']:
                 status = 'running'
             else:
@@ -206,6 +207,9 @@ class SignalsManager:
         return self.sdr_data
 
     def update_sdr_status(self):
+        """
+            Update Kismet SDR usage status
+        """
 
         if 'kismet' in self.services and self.services['kismet']['current_status'] == "active":
             kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
