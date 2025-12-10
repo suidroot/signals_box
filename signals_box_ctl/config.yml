@@ -65,6 +65,7 @@ services:
         link: null
     pagermon_client2:
         type: cli
+        description: Pagermon Client
         cmd_line: "/opt/signals_box_ctl/pagermon_client.sh 2 929.612M"
         working_dir: /opt/pagermon/client
         autostart: false
