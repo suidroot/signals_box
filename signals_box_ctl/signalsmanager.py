@@ -211,7 +211,7 @@ class SignalsManager:
             Update Kismet SDR usage status
         """
 
-        if 'kismet' in self.services and self.services['kismet']['current_status'] == "active":
+        if 'kismet' in self.services and self.services['kismet']['current_status'] == "running":
             kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
 
             for index, sdr_entry in enumerate(self.sdr_data):
@@ -222,11 +222,10 @@ class SignalsManager:
 
         for service_entry in self.services:
             if self.services[service_entry]['require_sdr']:
-                if self.services[service_entry]['current_status'] or \
-                    self.services[service_entry]['current_status'] == 'active':
+                if self.services[service_entry]['current_status'] == 'running':
                     for index, sdr_entry in enumerate(self.sdr_data):
                         if sdr_entry['Serial'] == str(self.services[service_entry]['selected_sdr']):
-                            self.sdr_data[index]['status'] = f"Used by {self.services[service_entry]['description']}"
+                            self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
 
     def set_service_radio(self, name, sdr_serial):
         """

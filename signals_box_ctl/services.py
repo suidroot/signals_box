@@ -469,7 +469,7 @@ class KismetStatus:
 
         for source in self.kismet_datasources.all():
             data_type = ""
-            
+
             name = source['kismet.datasource.capture_interface']
             sdr_id = -1
 
@@ -492,6 +492,9 @@ class KismetStatus:
 
     def lookup_by_sdr_id(self, sdr_id):
         """Look up a datasource by its ID."""
+
+        ret_val = None
+        
         for _, info in self.datasources.items():
             if info['sdr_id'] == sdr_id:
                 ret_val = info['data_type']
