@@ -53,19 +53,18 @@ services:
         link: "http://signals.local:3000/"
     pagermon_client1:
         type: cli
-        description: Pagermon Client 152.592M
+        description: Pagermon Client
         cmd_line: "/opt/pagermon/client/reader_alt.sh 1 152.592M"
         working_dir: /opt/pagermon/client
         autostart: false
         current_status: null
         require_sdr: true
-        freq_input: ""
+        freq_input: "152.592M"
         default_sdr: null
         selected_sdr: null
         link: null
     pagermon_client2:
         type: cli
-        description: Pagermon Client 929.612M
         cmd_line: "/opt/signals_box_ctl/pagermon_client.sh 2 929.612M"
         working_dir: /opt/pagermon/client
         autostart: false
@@ -73,7 +72,7 @@ services:
         default_sdr: null
         selected_sdr: null
         require_sdr: true
-        freq_input: 929.612M
+        freq_input: "929.612M"
         link: null
 
 buttons:

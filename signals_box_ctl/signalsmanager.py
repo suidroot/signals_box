@@ -5,9 +5,7 @@ This module contains the main class for managing services.
 """
 
 import logging
-# import logging.config
 import yaml
-# import subprocess
 from services import SystemdServiceManager, CliService, DockerService, KismetStatus
 from usbs import UsbDevices
 
@@ -49,44 +47,46 @@ class SignalsManager:
             creds = yaml.safe_load(credfile_handle)
             self.creds = creds
 
-    def get_all_service_status(self):
-        """
-        Get a list of the status for all configured services
+        return True
 
-        :param self: Description
-        """
+    # def get_all_service_status(self):
+    #     """
+    #     Get a list of the status for all configured services
 
-        logger.debug("Getting all service status")
-        for _, service_id  in enumerate(self.services):
+    #     :param self: Description
+    #     """
 
-            if self.services[service_id]['type'] == "systemd":
-                status_data = self.systemd_svc_mgr.status_service(self.services[service_id]['system_ctl_name'])
+    #     logger.debug("Getting all service status")
+    #     for _, service_id  in enumerate(self.services):
 
-                if status_data:
-                    if status_data.get('ActiveState'):
-                        self.services[service_id]['current_status'] = True
-                    else:
-                        self.services[service_id]['current_status'] = False
+    #         if self.services[service_id]['type'] == "systemd":
+    #             status_data = self.systemd_svc_mgr.status_service(self.services[service_id]['system_ctl_name'])
 
-                else:
-                    self.services[service_id]['current_status'] = False
-            elif self.services[service_id]['type'] == "docker":
-                status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
+    #             if status_data:
+    #                 if status_data.get('ActiveState'):
+    #                     self.services[service_id]['current_status'] = True
+    #                 else:
+    #                     self.services[service_id]['current_status'] = False
 
-                if status_data:
-                    if status_data == 'running':
-                        self.services[service_id]['current_status'] = True
-                    else:
-                        self.services[service_id]['current_status'] = False
-                else:
-                    self.services[service_id]['current_status'] = False
+    #             else:
+    #                 self.services[service_id]['current_status'] = False
+    #         elif self.services[service_id]['type'] == "docker":
+    #             status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
 
-            elif self.services[service_id]['type'] == "cli":
+    #             if status_data:
+    #                 if status_data == 'running':
+    #                     self.services[service_id]['current_status'] = True
+    #                 else:
+    #                     self.services[service_id]['current_status'] = False
+    #             else:
+    #                 self.services[service_id]['current_status'] = False
 
-                if not 'cli_status_obj' in self.services[service_id]:
-                    self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
+    #         elif self.services[service_id]['type'] == "cli":
 
-                self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
+    #             if not 'cli_status_obj' in self.services[service_id]:
+    #                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
+
+    #             self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
 
     def get_single_service_status(self, service_id):
         """
@@ -123,6 +123,7 @@ class SignalsManager:
                     status = "unknown"
             else:
                 status = "unknown"
+        
         elif self.services[service_id]['type'] == "docker":
             status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
 
@@ -131,10 +132,8 @@ class SignalsManager:
                     status = 'running'
                 else:
                     status = 'stopped'
-
             else:
                 status = 'unknown'
-
 
         elif self.services[service_id]['type'] == "cli":
 
@@ -146,8 +145,6 @@ class SignalsManager:
                 status = 'running'
             else:
                 status = "stopped"
-
-            # status = self.services[service_id]['current_status']
 
         return status, status_data
 
@@ -208,9 +205,10 @@ class SignalsManager:
 
     def update_sdr_status(self):
         """
-            Update Kismet SDR usage status
+            Update SDR usage status
         """
 
+        # Get Status from Kismet
         if 'kismet' in self.services and self.services['kismet']['current_status'] == "running":
             kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
 
@@ -220,9 +218,10 @@ class SignalsManager:
                 if kismet_result:
                     self.sdr_data[index]['status'] = f"Kismet: {kismet_result}"
 
+        # Get Status from other Services
         for service_entry in self.services:
-            if self.services[service_entry]['require_sdr']:
-                if self.services[service_entry]['current_status'] == 'running':
+            if self.services[service_entry]['require_sdr'] and \
+                self.services[service_entry]['current_status'] == 'running':
                     for index, sdr_entry in enumerate(self.sdr_data):
                         if sdr_entry['Serial'] == str(self.services[service_entry]['selected_sdr']):
                             self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"

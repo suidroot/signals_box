@@ -4,8 +4,6 @@
 This module contains the main class for managing services.
 """
 
-# TODO: Make CLI app managment more robust and persistent
-
 from typing import Dict, List, Optional, Any
 import logging
 import subprocess
@@ -36,9 +34,7 @@ class SystemdServiceManager:
     def __init__(self):
         self.bus = self.get_bus(False)
 
-    # --------------------------------------------------------------------------- #
     # D‑Bus helpers
-    # --------------------------------------------------------------------------- #
     @staticmethod
     def get_bus(is_user: bool) -> dbus.Bus:
         """Return the correct D‑Bus connection (system or session)."""
@@ -87,9 +83,7 @@ class SystemdServiceManager:
                 f"Failed to read properties of unit '{unit_name}': {exc}"
             ) from exc
 
-    # --------------------------------------------------------------------------- #
     # Service actions
-    # --------------------------------------------------------------------------- #
     def start_service(self, name: str) -> None:
         """Start the unit with the given name."""
         manager = self.get_manager()
@@ -144,23 +138,12 @@ class SystemdServiceManager:
         except DBusException as exc:
             raise RuntimeError(f"Failed to list units: {exc}") from exc
 
-        # Each unit tuple: (Id, Description, LoadState, ActiveState,
-        # SubState, FollowedBy)
-        # def matches(u: Tuple) -> bool:
-        #     if not pattern:
-        #         return True
-        #     return fnmatch.fnmatch(u[0], pattern)
-
         print(f"{'ID':<50} {'Active':<10} {'Sub':<10} {'Description'}")
         print("-" * 90)
         for unit in units:
-            # if matches(unit):
             print(f"{unit[0]:<50} {unit[3]:<10} {unit[4]:<10} {unit[1]}")
 
-
-# --------------------------------------------------------------------------- #
-# Helper functions
-# --------------------------------------------------------------------------- #
+# Systemd Helper functions
 def _substitute_placeholders(cmd_line: str, params: Dict[str, Any]) -> str:
     """
     Replace placeholders of the form <1>, <2>, ... in *cmd_line*
@@ -184,10 +167,6 @@ def _parse_command(cmd_line: str) -> List[str]:
 
     return shlex.split(cmd_line)
 
-
-# --------------------------------------------------------------------------- #
-# The core class
-# --------------------------------------------------------------------------- #
 class CliService:
     """
     Wraps a command‑line program so you can start/stop it from Python.
@@ -236,9 +215,7 @@ class CliService:
             logger.info("Autostart enabled – launching service '%s'", self.svc_id)
             self.start()
 
-    # ------------------------------------------------------------------ #
     # Private helpers
-    # ------------------------------------------------------------------ #
     def _cleanup_on_exit(self) -> None:
         """
         Called automatically on program exit to ensure we don't leave
@@ -259,9 +236,7 @@ class CliService:
         if not self.is_running():
             raise RuntimeError(f"Service '{self.svc_id}' is not running")
 
-    # ------------------------------------------------------------------ #
     # Public API
-    # ------------------------------------------------------------------ #
     def start(self) -> None:
         """
         Launch the command as a background process.
@@ -361,9 +336,7 @@ class CliService:
                 return False
             return self._proc.poll() is None
 
-    # ------------------------------------------------------------------ #
     # Representation helpers
-    # ------------------------------------------------------------------ #
     def __repr__(self) -> str:
         status = "RUNNING" if self.is_running() else "STOPPED"
         return f"<CliService id={self.svc_id!r} status={status}>"
@@ -393,7 +366,6 @@ class DockerService:
 
         return status
 
-
     def stop_service(self, container_name: str) -> None:
         """Stop the container."""
         status = None
@@ -406,7 +378,6 @@ class DockerService:
             status = False
 
         return status
-
 
     def restart_service(self, container_name: str) -> None:
         """Restart the container."""
@@ -421,7 +392,6 @@ class DockerService:
             status = False
 
         return status
-
 
     def status_service(self, container_name: str) -> None:
         """Print a concise status summary of the container."""
@@ -494,7 +464,7 @@ class KismetStatus:
         """Look up a datasource by its ID."""
 
         ret_val = None
-        
+
         for _, info in self.datasources.items():
             if info['sdr_id'] == sdr_id:
                 ret_val = info['data_type']

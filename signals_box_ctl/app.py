@@ -107,6 +107,8 @@ def render_service_toggles(render_manager):
 
         set_radio_button = ""
         freq_input = ""
+        link = ""
+        sdr_selection = ""
 
         status, _ = render_manager.get_single_service_status(service_id)
         render_manager.services[service_id]['current_status'] = status
@@ -114,9 +116,7 @@ def render_service_toggles(render_manager):
 
         if render_manager.services[service_id]['link']:
             link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
-        else:
-            link = ""
-
+            
         if render_manager.services[service_id]['require_sdr']:
             if 'default_sdr' in render_manager.services[service_id]:
                 sdr_selection = render_sdr_drop_list(usb_dev_list, service_id, \
@@ -129,9 +129,8 @@ def render_service_toggles(render_manager):
                 freq_input = f"<input type=\"text\" name=\"freq_{service_id}\", value=\"{freq_value}\" size=\"11\"></input>"
 
             set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\">Set Radio</button>"
-        else:
-            sdr_selection = ""
-
+            
+        # Build Row HTML
         row = f"""
         <tr>
             <td style="background:{color}; width:2%">&nbsp;</td>
