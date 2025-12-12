@@ -39,6 +39,7 @@ class SignalsManager:
             self.http_base_url = cfg['http_base_url']
             self.links = cfg['links']
             self.buttons = cfg['buttons']
+            print(self.buttons)
 
             self.systemd_svc_mgr = SystemdServiceManager()
             self.docker_svc_mgr = DockerService()

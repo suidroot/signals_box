@@ -8,7 +8,6 @@ services:
         type: systemd
         description: Icecast
         link: http://signals.local:8000
-        configmethod: null          # no config method defined
         current_status: null
         autostart: false
         require_sdr: false
@@ -17,7 +16,6 @@ services:
     #     type: systemd
     #     description: Darkice
     #     link: null
-    #     configmethod: null          # no config method defined
     #     current_status: false
     #     autostart: false
     #     require_sdr: false
@@ -26,7 +24,6 @@ services:
         type: systemd
         description: Kismet
         link: http://signals.local:2501
-        configmethod: null          # no config method defined
         current_status: null
         autostart: false
         require_sdr: false
@@ -35,7 +32,6 @@ services:
         container_name: owrx-mbe
         description: "Openwebex+"
         link: "http://signals.local:8073"
-        configmethod: null
         current_status: null
         autostart: false
         default_sdr: '77771111153705700'
@@ -77,17 +73,26 @@ services:
         link: null
 
 buttons:
-  - name: "refresh_page" 
+  refresh_page:
+    name: "refresh_page" 
     text: "Refresh Page"
     html_command: "onClick=\"window.location.reload();\""
-  - name: "reload_config" 
+  reload_config:
+    name: "reload_config" 
     text: "Reload Config"
     html_command: "type=\"submit\""
-  - name: "shutdown" 
+  svc_restart:
+    name: "svc_restart" 
+    text: "Restart Service_ctl"
+    html_command: "type=\"submit\""
+    cli_command: ["/usr/bin/systemctl", "restart", "service_ctl.service"]
+  shutdown:
+    name: "shutdown" 
     text: "Shutdown"
     html_command: "type=\"submit\""
     cli_command: ["/usr/sbin/shutdown", "now"]
-  - name: "reboot" 
+  reboot:
+    name: "reboot" 
     text: "Reboot"
     html_command: "type=\"submit\""
     cli_command: ["/usr/sbin/reboot"]

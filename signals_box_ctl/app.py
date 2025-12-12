@@ -156,8 +156,8 @@ def render_buttons(buttons):
     '''
 
     button_text = ""
-    for _, button_data in enumerate(buttons):
-        button_text += f"<button {button_data['html_command']} name={button_data['name']} class=\"btn\">{button_data['text']}</button>\n"
+    for button_name in buttons:
+        button_text += f"<button {buttons[button_name]['html_command']} name={buttons[button_name]['name']} class=\"btn\">{buttons[button_name]['text']}</button>\n"
     button_text += "</p>\n"
 
     return button_text
@@ -192,9 +192,9 @@ def index():
             output += "Reloading Config File"
             manager.load_config()
         elif "shutdown" in request.form:
-            subprocess.run(manager.buttons['shutdown']['cli_comand'])
+            subprocess.run(manager.buttons['shutdown']['cli_command'])
         elif "reboot" in request.form:
-            subprocess.run(manager.buttons['reboot']['cli_comand'])
+            subprocess.run(manager.buttons['reboot']['cli_command'])
 
     links_table = ""
     links_table = '<p name="links">\n'
