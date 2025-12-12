@@ -9,6 +9,8 @@ On top of this I am building a web app that will allow me to control the system 
 This is a work in progress.
 
 ## Current Parts
+
+Radios
 - [PWR DIV / SMA / RoHS \| ZN4PD1-63W-S+ \| Mini-Circuits](https://www.minicircuits.com/WebStore/dashboard.html?model=ZN4PD1-63W-S%2B)
 - 4x RTL-SDR 
     - 3x RTL-SDR v4
@@ -16,11 +18,23 @@ This is a work in progress.
 - 1x LimeSDR Mini v1
 - CC2531 - Zigbee and IEEE 802.15.4 wireless MCU with up to 256kB Flash and 8kB RAM
 - [Bluefruit LE Sniffer - Bluetooth®Low Energy 4.0 - nRF5182 \[Firmware Version 2\] : ID 2269 : Adafruit Industries, Unique & fun DIY electronics and kits](https://www.adafruit.com/product/2269)
-- -OLD: USBGear 7-Port USB 3.2 Gen 1 - Had power feedback issues-
-- New: https://www.startech.com/en-us/usb-hubs/st7300usbme
+- ALFA Network AWUS036ACS Wide-Coverage Dual-Band AC600 USB Wireless Wi-Fi Adapter
+
+USB
+- SABRENT 4-Port USB 3.0 Hub with Individual LED Power Switches - Slim, Portable Design - 2 Ft Cable - Fast Data Transfer - Compatible with Mac & PC (HB-UM43) 
+- [7-Port USB 3.0 Hub (5Gbps) - Metal Industrial USB-A Hub with ESD Protection & 350W Surge Protection](https://www.startech.com/en-us/usb-hubs/st7300usbme)
+
+Case
 - LeMotech Mounting Plate for Junction Box
 - [2800 Weatherproof Protective Case, Medium, Orange](https://www.harborfreight.com/2800-weatherproof-protective-case-medium-orange-58655.html)
-- [Qotom X86 Mini PC Q190G4N](https://www.aliexpress.com/i/3256804930512617.html)
+- Raspberry Pi 4
+- 2 Port Power Pole Pannel mount
+- USB3 and Ethernt Pannel Mount
+
+Power
+- Chunzehui F-1011 6-Position 45A Power Pole Distribution Block Module, Connector Power Splitter Distributor Source Strip
+- Klnuoxj DC 12V/24V to 5V USB C Step Down Converter Type-C Interface 5A 25W
+- Cllena DC 8V-40V to 12V 10A Automatic Buck Boost Converter
 
 ## Signal_ctl - Device and service Manager
 
