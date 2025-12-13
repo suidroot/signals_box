@@ -1,6 +1,6 @@
 # signals_box
 
-![WIP image 11-21-25](git_images/inprogress-251121.jpeg)
+![WIP image 11-21-25](git_images/inprogress-251212.jpeg)
 
 This is a portable multisignal detection system. This setup is inspired by [this](https://hackaday.com/wp-content/uploads/2025/10/jawn02_busybox.jpg) built by [busysignal](https://github.com/busysignal/) which I found on a image from Jawncon 0x2 on on Hackaday. This carying case is designed to connect multiple RF sensors including RTL-SDRs and other signal specific sensors. Many of the components I already had when I started this project in an attmept to keep costs down.
 
