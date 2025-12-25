@@ -6,7 +6,13 @@ This module contains the main class for managing services.
 
 import logging
 import yaml
-from services import SystemdServiceManager, CliService, DockerService, KismetStatus
+from services import (
+    SystemdServiceManager, 
+    CliService, 
+    DockerService, 
+    KismetStatus, 
+    supported_services
+)
 from usbs import UsbDevices
 
 logger = logging.getLogger(__name__)
@@ -39,7 +45,6 @@ class SignalsManager:
             self.http_base_url = cfg['http_base_url']
             self.links = cfg['links']
             self.buttons = cfg['buttons']
-            print(self.buttons)
 
             self.systemd_svc_mgr = SystemdServiceManager()
             self.docker_svc_mgr = DockerService()
