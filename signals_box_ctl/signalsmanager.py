@@ -186,9 +186,10 @@ class SignalsManager:
             self.docker_svc_mgr.stop_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
-                self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
-
-            self.services[service_id]['cli_status_obj'].stop()
+                logger.error("No cli service object found for %s" % service_id)
+                # self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
+            else:
+                self.services[service_id]['cli_status_obj'].stop()
 
         return self.get_single_service_status(service_id)
 
