@@ -1,0 +1,20 @@
+--- /opt/pagermon/client/reader.orig	2025-12-12 22:06:37.631061585 -0500
++++ /opt/pagermon/client/reader.js	2025-12-12 22:08:36.997548859 -0500
+@@ -118,7 +118,7 @@
+             }
+         }
+         if (line.match(/([ |]ALN[ |]|[ |]GPN[ |]|[ |]NUM[ |])/)) {
+-            message = line.match(/FLEX[:|].*[|\[][0-9 ]*[|\]] ?...[ |](.+)/)[1].trim();
++            message = line.match(/FLEX[:|].*[|\[][0-9 ]*[|\]] ?...[ |]{0,1}(.*)/)[1].trim();
+             if (line.match(/[ |][0-9]{4}\/[0-9]\/F\/.[ |]/)) {
+                 // message is fragmented, hold onto it for next line
+                 frag[address] = message;
+@@ -160,7 +160,7 @@
+ 
+   // filter out most false hits
+   // if too much junk data, make sure '-p' option isn't enabled in multimon
+-  if (address.length > 2 && message) {
++  if (address.length > 2 && message && trimMessage.length > 1) {
+     var padAddress = padDigits(address,7);
+     console.log(colors.red(time+': ')+colors.yellow(padAddress+': ')+colors.success(trimMessage));
+     // now send the message
