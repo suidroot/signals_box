@@ -4,25 +4,39 @@
 This module contains the main class for managing services.
 """
 
+# TODO: Alerts and disabled services with out libraries
+
 from typing import Dict, List, Optional, Any
 import logging
 import subprocess
 import shlex
 import threading
 import atexit
-import dbus
-from dbus.exceptions import DBusException
+
+supported_services = [
+    'cli'
+]
 
 try:
-    import kismet_rest
+    import dbus
+    from dbus.exceptions import DBusException
+    supported_services.append('systemd')
 except ImportError as e:
-    raise Exception ("kismet_rest not installed on system") from e
+    raise Exception ("dbus library not installed on system") from e
 
 try:
     import docker
     import docker.errors
+    supported_services.append('docker')
+
 except ImportError as e:
     raise Exception ("docker API not installed on system") from e
+
+try:
+    import kismet_rest
+
+except ImportError as e:
+    raise Exception ("kismet_rest not installed on system") from e
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +54,6 @@ class SystemdServiceManager:
         """Return the correct D‑Bus connection (system or session)."""
         return dbus.SessionBus() if is_user else dbus.SystemBus()
 
-
     def get_manager(self) -> dbus.Interface:
         """
         Get the `org.freedesktop.systemd1.Manager` interface.
@@ -54,7 +67,6 @@ class SystemdServiceManager:
             raise RuntimeError(
                 f"Unable to connect to systemd over D‑Bus: {exc}"
             ) from exc
-
 
     def get_unit_properties(self, unit_name: str) -> dict:
         """
@@ -103,7 +115,6 @@ class SystemdServiceManager:
         except DBusException as exc:
             raise RuntimeError(f"Failed to stop {name}: {exc}") from exc
 
-
     def restart_service(self, name: str) -> None:
         """Restart the unit."""
         manager = self.get_manager()
@@ -112,7 +123,6 @@ class SystemdServiceManager:
             print(f"🔄  Restarted {name}")
         except DBusException as exc:
             raise RuntimeError(f"Failed to restart {name}: {exc}") from exc
-
 
     def status_service(self, name: str) -> None:
         """Print a concise status summary of the unit."""
@@ -128,7 +138,6 @@ class SystemdServiceManager:
             props = None
 
         return props
-
 
     def list_services(self) -> None:
         """List all services, optionally filtering by a glob pattern."""
@@ -156,7 +165,6 @@ def _substitute_placeholders(cmd_line: str, params: Dict[str, Any]) -> str:
         placeholder = f"<{key}>"
         result = result.replace(placeholder, str(val))
     return result
-
 
 def _parse_command(cmd_line: str) -> List[str]:
     """

@@ -7,10 +7,10 @@ This module contains the main class for managing services.
 import logging
 import yaml
 from services import (
-    SystemdServiceManager, 
-    CliService, 
-    DockerService, 
-    KismetStatus, 
+    SystemdServiceManager,
+    CliService,
+    DockerService,
+    KismetStatus,
     supported_services
 )
 from usbs import UsbDevices
@@ -110,7 +110,7 @@ class SignalsManager:
 
         status = "unknown"
         status_data = None
-        logger.debug("Refreshing Service Status for service: %s", service_id)
+        logger.debug("Refreshing Service Status for service: %s using type %s", service_id, self.services[service_id]['type'])
 
         if self.services[service_id]['type'] == "systemd":
 
@@ -129,7 +129,7 @@ class SignalsManager:
                     status = "unknown"
             else:
                 status = "unknown"
-        
+
         elif self.services[service_id]['type'] == "docker":
             status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
 
@@ -163,6 +163,8 @@ class SignalsManager:
         :param service_id: Description
         """
 
+        logger.debug("Calling Start for service: %s using type %s", service_id, self.services[service_id]['type'])
+
         if self.services[service_id]['type'] == "systemd":
             self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
         elif self.services[service_id]['type'] == "docker":
@@ -184,6 +186,9 @@ class SignalsManager:
         :param self: Description
         :param service_id: Description
         """
+        
+        logger.debug("Calling Stop for service: %s using type %s", service_id, self.services[service_id]['type'])
+
 
         if self.services[service_id]['type'] == "systemd":
             self.systemd_svc_mgr.stop_service(self.services[service_id]['system_ctl_name'])
@@ -191,7 +196,7 @@ class SignalsManager:
             self.docker_svc_mgr.stop_service(self.services[service_id]['container_name'])
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
-                logger.error("No cli service object found for %s" % service_id)
+                logger.error("No cli service object found for %s", service_id)
                 # self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
             else:
                 self.services[service_id]['cli_status_obj'].stop()
@@ -204,6 +209,7 @@ class SignalsManager:
         Gather list of all SDRs
         """
 
+        logger.debug("Getting all SDRs")
         usb_dev = UsbDevices()
         self.sdr_data = usb_dev.list_rtlsdr_devices()
         self.update_sdr_status()
@@ -215,8 +221,11 @@ class SignalsManager:
             Update SDR usage status
         """
 
+        logger.debug("Updating SDR status")
+
         # Get Status from Kismet
         if 'kismet' in self.services and self.services['kismet']['current_status'] == "running":
+            logger.debug("Getting Kismet SDR usage status")
             kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
 
             for index, sdr_entry in enumerate(self.sdr_data):
@@ -226,15 +235,18 @@ class SignalsManager:
                     self.sdr_data[index]['status'] = f"Kismet: {kismet_result}"
 
         # Get Status from other Services
+
+        logger.debug("Updating other SDR status")
         for service_entry in self.services:
             if self.services[service_entry]['require_sdr'] and \
-                self.services[service_entry]['current_status'] == 'running':
-                    for index, sdr_entry in enumerate(self.sdr_data):
-                        if sdr_entry['Serial'] == str(self.services[service_entry]['selected_sdr']):
-                            self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
+               self.services[service_entry]['current_status'] == 'running':
+                for index, sdr_entry in enumerate(self.sdr_data):
+                    if sdr_entry['Serial'] == str(self.services[service_entry]['selected_sdr']):
+                        self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
 
     def set_service_radio(self, name, sdr_serial):
         """
         Set the radio to be used by a given service
         """
+        logger.debug(f"Setting {name} to use SDR: {sdr_serial}")
         self.services[name]['selected_sdr'] = sdr_serial
