@@ -1,0 +1,47 @@
+{
+  "ver": 2,
+  "sources": [
+    {
+      "center": 853284375.0,
+      "rate": 2560000.0,
+      "error": 0,
+      "gain": 40,
+      "antenna": "RX",
+      "digitalRecorders": 6,
+      "driver": "osmosdr",
+      "device": "rtl=00000003",
+      "logFile": true
+    },
+    {
+      "center": 851421875.0,
+      "rate": 2560000.0,
+      "error": 0,
+      "gain": 40,
+      "antenna": "RX",
+      "digitalRecorders": 6,
+      "driver": "osmosdr",
+      "device": "rtl=00000001",
+      "logFile": true
+    }
+  ],
+  "systems": [{
+    "control_channels": [852787500, 853287500, 853537500, 853787500],
+    "type": "p25",
+    "shortName": "PWM",
+    "talkgroupsFile": "./pwm-talkgroups.csv",
+    "squelch": -50,
+    "modulation": "qpsk"
+  }],
+  "plugins": [
+    {
+      "name": "rdioscanner_uploader",
+      "library": "librdioscanner_uploader.so",
+      "server": "http://player:3000",
+      "systems": [{
+              "shortName": "Portland",
+              "apiKey": "f23ea82d-464d-4bc0-ac6a-15a0b36f12d3",
+              "systemId": 2022
+      }]
+    }
+  ]
+}

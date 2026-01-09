@@ -1,0 +1,47 @@
+{
+  "ver": 2,
+  "sources": [
+    {
+      "center": 171890625.0,
+      "rate": 2560000.0,
+      "error": 0,
+      "gain": 40,
+      "antenna": "RX",
+      "digitalRecorders": 6,
+      "driver": "osmosdr",
+      "device": "rtl=00000003",
+      "logFile": true
+    },
+    {
+      "center": 152060000.0,
+      "rate": 2560000.0,
+      "error": 0,
+      "gain": 40,
+      "antenna": "RX",
+      "digitalRecorders": 6,
+      "driver": "osmosdr",
+      "device": "rtl=00000001",
+      "logFile": true
+    }
+  ],
+  "systems": [{
+    "control_channels": [171162500, 171312500, 171625000, 172312500, 172625000],
+    "type": "p25",
+    "shortName": "MSCommNet",
+    "talkgroupsFile": "./trs_tg_6703.csv",
+    "squelch": -50,
+    "modulation": "qpsk"
+  }],
+  "plugins": [
+    {
+      "name": "rdioscanner_uploader",
+      "library": "librdioscanner_uploader.so",
+      "server": "http://player:3000",
+      "systems": [{
+              "shortName": "MSCommNet",
+              "apiKey": "45e4f786-a613-4bad-94ea-3f2a20bdb2f4",
+              "systemId": 207
+      }]
+    }
+  ]
+}
