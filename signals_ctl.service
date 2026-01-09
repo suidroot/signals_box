@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 WorkingDirectory=/opt/signals_box_ctl
-ExecStart=/opt/signals_box_ctl/signals/bin/gunicorn -b 0.0.0.0:8080 -w 4 wsgi:app
-Environment="PATH=/opt/signals_box_ctl/signals/bin/"
+ExecStart=/opt/signals_box_ctl/venv/bin/gunicorn -b 0.0.0.0:8080 -w 4 wsgi:app
+Environment="PATH=$PATH:/opt/signals_box_ctl/venv/bin"
 Restart=always
 
 [Install]

@@ -108,7 +108,10 @@ sudo mkdir -p /opt/owrx-docker/var /opt/owrx-docker/etc /opt/owrx-docker/plugins
 
 ### 
 sudo apt install python3-flask python3-usb python3-dbus
-
+# mkdir in opt
+# copy signals_box_ctl contents
+# put signals_ctl.service in /etc/systemd/system
+# make creds.yml for kismet access 
 
 ## ACARS
 ### libacars

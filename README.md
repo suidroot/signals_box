@@ -49,11 +49,12 @@ It will list SDR devices and the Rtl-Sdr device numbers if relavent.
 
 
 ## TODO
-### Hardware
-- [ ] Power System
 
 ### Control Software
 - [ ] API Implenentation
+- [ ] Make CLI Service Management work
+    - Script args
+    - Service State Management
 
 ### System
 - [ ] Ansible Build Script
