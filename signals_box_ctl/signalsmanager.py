@@ -238,15 +238,32 @@ class SignalsManager:
 
         logger.debug("Updating other SDR status")
         for service_entry in self.services:
+            index = -1
             if self.services[service_entry]['require_sdr'] and \
-               self.services[service_entry]['current_status'] == 'running':
-                for index, sdr_entry in enumerate(self.sdr_data):
-                    if sdr_entry['Serial'] == str(self.services[service_entry]['selected_sdr']):
+                self.services[service_entry]['current_status'] == 'running' and \
+                self.services[service_entry]['selected_sdr']:
+                    index = next(i for i, d in enumerate(self.sdr_data) if d.get('Serial') == str(self.services[service_entry]['selected_sdr']))
+                    if not index == -1:
                         self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
 
     def set_service_radio(self, name, sdr_serial):
         """
         Set the radio to be used by a given service
         """
-        logger.debug(f"Setting {name} to use SDR: {sdr_serial}")
-        self.services[name]['selected_sdr'] = sdr_serial
+        index = -1
+
+        if sdr_serial:
+            index = next(i for i, d in enumerate(self.sdr_data) if d.get('Serial') == sdr_serial)
+            if not index == -1:
+                self.services[name]['selected_sdr'] = str(sdr_serial)
+                self.sdr_data[index]['status'] = f"{self.services[name]['description']}"
+        else:
+            index = next(i for i, d in enumerate(self.sdr_data) if d.get('status') == self.services[name]['description'])
+            if not index == -1:
+                self.services[name]['selected_sdr'] = None
+                self.sdr_data[index]['status'] = ""
+
+
+        # for index, sdr_entry in enumerate(self.sdr_data):
+        #     if sdr_entry['Serial'] == sdr_serial:
+        # self.services[name]['selected_sdr'] = sdr_serial

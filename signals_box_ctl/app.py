@@ -126,7 +126,7 @@ def render_service_toggles(render_manager):
         if render_manager.services[service_id]['require_sdr']:
             if 'default_sdr' in render_manager.services[service_id]:
                 sdr_selection = render_sdr_drop_list(usb_dev_list, service_id, \
-                    select_default=render_manager.services[service_id]['default_sdr'])
+                    select_default=render_manager.services[service_id]['selected_sdr'])
             else:
                 sdr_selection = render_sdr_drop_list(usb_dev_list, service_id)
 

@@ -2,10 +2,6 @@ http_base_url: http://signals.local
 
 pid_file_location: ""
 
-radios:
-  77771111153705700:
-    ppm: 48
-
 services:
     icecase:
         system_ctl_name: icecast2.service
@@ -41,6 +37,16 @@ services:
         default_sdr: '77771111153705700'
         selected_sdr: '77771111153705700'
         require_sdr: true
+    intercept:
+        type: docker
+        container_name: intercept_local
+        description: "intercept"
+        link: "http://signals.local:5050"
+        current_status: null
+        autostart: false
+        require_sdr: true
+        default_sdr: null
+        selected_sdr: null
     pagermon_server:
         type: docker
         container_name: pagermon
@@ -59,7 +65,7 @@ services:
         autostart: false
         current_status: null
         require_sdr: true
-        freq_input: "152.6M"
+        freq_input: "152.592M"
         default_sdr: null
         selected_sdr: null
         link: null
