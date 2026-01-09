@@ -15,6 +15,7 @@
 import logging
 import logging.config
 import subprocess
+from time import sleep
 import yaml
 from flask import Flask, request, render_template
 from signalsmanager import SignalsManager
@@ -39,6 +40,8 @@ def render_sdr_list(usb_dev_list):
     :return: Description
     :rtype: Any
     """
+
+    logger.debug("Render SDR Information")
     table_rows = [
         """<tr>
             <th>Manufacturer</th>
@@ -69,6 +72,7 @@ def render_sdr_drop_list(usb_dev_list, name, select_default=None):
     """
     Render HTML Drop down list of SDR detected on the system.
     """
+    logger.debug("Rendering SDR Drop for Service")
 
     selection = f"<select NAME=\"sdr_{name}\">\n"
     selection += """<option value="">Select SDR</option>\n"""
@@ -91,6 +95,8 @@ def render_service_toggles(render_manager):
 
     :param render_manager: Description
     """
+
+    logger.debug("Rendering Service Toggles")
 
     statuses = {
         "unavailable"   : "#2727F5", # blue
@@ -155,6 +161,7 @@ def render_buttons(buttons):
         Generate HTML for buttons
     '''
 
+    logger.debug("Rendering Buttons")
     button_text = ""
     for button_name in buttons:
         button_text += f"<button {buttons[button_name]['html_command']} name={buttons[button_name]['name']} class=\"btn\">{buttons[button_name]['text']}</button>\n"
@@ -177,7 +184,7 @@ def index():
     output = ""
 
     if request.method == "POST":
-        # print(request.form.keys())
+        logger.debug(f"POST received {request.form}")
 
         if "stop" in request.form:
             output += f"Stopping {request.form['stop']}"
@@ -185,8 +192,8 @@ def index():
         elif "start" in request.form:
             output += f"Starting {request.form['start']}"
             manager.start_service(request.form['start'])
+            sleep(2)
         elif "set_radio" in request.form:
-            # request.form['set_radio']
             manager.set_service_radio(request.form['set_radio'], request.form[f'sdr_{request.form['set_radio']}'])
         elif "reload_config" in request.form:
             output += "Reloading Config File"
@@ -211,6 +218,5 @@ def index():
         service_rows=service_rows, links_table=links_table, buttons=button_text)
 
 if __name__ == "__main__":
-    # 8080 is the same port that the original PHP page used.
     # Run with:  sudo python3 app.py
     app.run(host="0.0.0.0", port=8081, debug=False)
