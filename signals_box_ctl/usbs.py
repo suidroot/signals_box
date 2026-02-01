@@ -33,6 +33,7 @@ SDR_IDS: Dict[Tuple[int, int], str] = {
     (0x0bda, 0x2832): "RTL2832U Generic",
     (0x0403, 0x601f): "LimeSDR Mini",
     (0x0bda, 0x2838): "RTLSDRBlog v4",
+    (0x1d50, 0x60a1): "AirSpy"
     # Add more pairs if you encounter a dongle that isn’t listed.
 }
 
