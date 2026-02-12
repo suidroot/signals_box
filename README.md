@@ -15,21 +15,26 @@ Radios
 - 4x RTL-SDR 
     - 3x RTL-SDR v4
     - 1x Old RTL-SDR
-- 1x LimeSDR Mini v1
+- Airspy R2
 - CC2531 - Zigbee and IEEE 802.15.4 wireless MCU with up to 256kB Flash and 8kB RAM
-- [Bluefruit LE Sniffer - Bluetooth®Low Energy 4.0 - nRF5182 \[Firmware Version 2\] : ID 2269 : Adafruit Industries, Unique & fun DIY electronics and kits](https://www.adafruit.com/product/2269)
+- CC3540 - Bluetooth Low Energy (BLE) Wireless Module
 - ALFA Network AWUS036ACS Wide-Coverage Dual-Band AC600 USB Wireless Wi-Fi Adapter
+- USB GPS Module Beidou Glonass Receiver Navigation GPS Antenna IPX to SMA Cable
 
 USB
 - SABRENT 4-Port USB 3.0 Hub with Individual LED Power Switches - Slim, Portable Design - 2 Ft Cable - Fast Data Transfer - Compatible with Mac & PC (HB-UM43) 
 - [7-Port USB 3.0 Hub (5Gbps) - Metal Industrial USB-A Hub with ESD Protection & 350W Surge Protection](https://www.startech.com/en-us/usb-hubs/st7300usbme)
 
+Compute
+- [Radxa X4](https://radxa.com/products/x/x4/)
+- waveshare 7inch HDMI LCD IPS Capacitive Touch Screen 1024×600 Display Monitor
+
+
 Case
 - LeMotech Mounting Plate for Junction Box
 - [2800 Weatherproof Protective Case, Medium, Orange](https://www.harborfreight.com/2800-weatherproof-protective-case-medium-orange-58655.html)
-- Raspberry Pi 4
-- 2 Port Power Pole Pannel mount
-- USB3 and Ethernt Pannel Mount
+- 2 Port Power Pole Panel mount
+- USB3 and Ethernet Panel Mount
 
 Power
 - Chunzehui F-1011 6-Position 45A Power Pole Distribution Block Module, Connector Power Splitter Distributor Source Strip
@@ -43,10 +48,17 @@ Power
 This tool can use used to start and stop services, manage USB devices, and control other applications. It is designed to be a simple tool for managing your Multi SDR setup. Supported service types:
 - systemd
 - docker
-- cli (command line)
+- cli (command line) (work in progress)
 
 It will list SDR devices and the Rtl-Sdr device numbers if relavent. 
 
+## Tested Tools
+- https://trunkrecorder.com/
+- https://github.com/chuot/rdio-scanner/tree/master
+- https://github.com/smittix/intercept
+- https://fms.komkon.org/OWRX/
+- https://github.com/pagermon
+- https://www.kismetwireless.net
 
 ## TODO
 
