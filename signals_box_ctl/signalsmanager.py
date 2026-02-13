@@ -236,15 +236,19 @@ class SignalsManager:
 
         # Get Status from other Services
 
-        logger.debug("Updating other SDR status")
+        logger.debug("Updating %s SDR status" % len(self.services))
         for service_entry in self.services:
             index = -1
             if self.services[service_entry]['require_sdr'] and \
                 self.services[service_entry]['current_status'] == 'running' and \
                 self.services[service_entry]['selected_sdr']:
-                    index = next(i for i, d in enumerate(self.sdr_data) if d.get('Serial') == str(self.services[service_entry]['selected_sdr']))
-                    if not index == -1:
-                        self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
+                    try:
+                        index = next(i for i, d in enumerate(self.sdr_data) if d.get('Serial') == str(self.services[service_entry]['selected_sdr']))
+                        if not index == -1:
+                            self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
+
+                    except StopIteration:
+                        logger.error(f"Could not find SDR with serial {self.services[service_entry]['selected_sdr']} for service {service_entry}")
 
     def set_service_radio(self, name, sdr_serial):
         """

@@ -55,7 +55,10 @@ class UsbDevices:
             if index:
                 return usb.util.get_string(dev, index)
         except usb.core.USBError:
-            pass
+            logger.error(f"USBError while fetching string descriptor index {index}")
+        except ValueError:
+            logger.error(f"ValueError while fetching string descriptor index {index}")
+
         return ""
 
     @staticmethod
@@ -68,12 +71,15 @@ class UsbDevices:
         Return a dictionary with the most useful information about a device.
         """
         vid, pid = dev.idVendor, dev.idProduct
+
         vendor_str = self.get_string(dev, dev.iManufacturer)
         product_str = self.get_string(dev, dev.iProduct)
         serial_str = self.get_string(dev, dev.iSerialNumber)
+        
         try:
             rtl_id = RtlSdr.get_device_index_by_serial(serial_str)
         except:
+            logger.error(f"Could not get RTL-SDR device number for serial {serial_str}")
             rtl_id = "na"
 
         # Try to find a friendly name for the dongle
