@@ -3,14 +3,14 @@ http_base_url: http://signals.local
 pid_file_location: ""
 
 services:
-    icecase:
-        system_ctl_name: icecast2.service
-        type: systemd
-        description: Icecast
-        link: http://signals.local:8000
-        current_status: null
-        autostart: false
-        require_sdr: false
+  #icecase:
+      #   system_ctl_name: icecast2.service
+      #  type: systemd
+      #  description: Icecast
+      #  link: http://signals.local:8000
+      #  current_status: null
+      #  autostart: false
+      #  require_sdr: false
     # darkice:
     #     system_ctl_name: darkice.service
     #     type: systemd
@@ -23,7 +23,7 @@ services:
         system_ctl_name: kismet.service
         type: systemd
         description: Kismet
-        link: http://signals.local:2501
+        link: http://intrepid.local:2501
         current_status: null
         autostart: false
         require_sdr: false
@@ -31,7 +31,7 @@ services:
         type: docker
         container_name: owrx-mbe
         description: "Openwebex+"
-        link: "http://signals.local:8073"
+        link: "http://intrepid.local:8073"
         current_status: null
         autostart: false
         default_sdr: '77771111153705700'
@@ -41,7 +41,7 @@ services:
         type: docker
         container_name: intercept_local
         description: "intercept"
-        link: "http://signals.local:5050"
+        link: "http://intrepid.local:5050"
         current_status: null
         autostart: false
         require_sdr: true
@@ -56,7 +56,7 @@ services:
         autostart: false
         current_status: null
         require_sdr: false
-        link: "http://signals.local:3000/"
+        link: "http://intrepid.local:3000/"
     pagermon_client1:
         type: cli
         description: Pagermon Client
@@ -109,7 +109,7 @@ buttons:
 
 links:
   - id: vnc
-    url: "vnc://signals.local:5901"
+    url: "vnc://intredpid.local:5901"
     name: VNC Access
   # - id: rdp
   #   url: "rdp://signals.local"

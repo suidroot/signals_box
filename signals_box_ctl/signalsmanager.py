@@ -254,6 +254,8 @@ class SignalsManager:
         """
         Set the radio to be used by a given service
         """
+        logger.debug(f"Setting SDR with serial {sdr_serial} for service {name}")
+        
         index = -1
 
         if sdr_serial:

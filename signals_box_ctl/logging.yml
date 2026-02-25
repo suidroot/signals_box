@@ -24,7 +24,7 @@ handlers:
     maxBytes: 5242880                   # 5 MiB  (adjust if you need more)
     backupCount: 5
     encoding: utf-8
-    level: DEBUG                        # logs everything DEBUG+ into the file
+    level: INFO                        # logs everything INFO+ into the file
     formatter: detailed
 
   console:
@@ -36,5 +36,5 @@ handlers:
 #  Root logger (the one you get with logging.getLogger() without a name)
 # ------------------------------------------------------------------
 root:
-  level: DEBUG                          # overall root level
+  level: INFO                          # overall root level
   handlers: [file, console]             # both handlers are attached to root
