@@ -7,12 +7,21 @@ This module contains the main class for managing services.
 import logging
 import time
 import yaml
+
+_gpsd_available = False
+try:
+    import gpsd
+    _gpsd_available = True
+except ImportError:
+    pass  # GPS integration disabled; get_gps_status() will return 'unavailable'
+
 from services import (
     SystemdServiceManager,
     CliService,
     DockerService,
     KismetStatus,
-    supported_services
+    supported_services,
+    _kismet_rest_available,
 )
 from usbs import UsbDevices
 
@@ -29,6 +38,8 @@ class SignalsManager:
     _CACHE_TTL = 10  # seconds
 
     def __init__(self, config_file="config.yml", creds_file="creds.yml"):
+        if not _gpsd_available:
+            logger.warning("gpsd not installed – GPS integration disabled")
         self.config_file = config_file
         self.creds_file = creds_file
         self.sdr_data = None
@@ -36,6 +47,7 @@ class SignalsManager:
         self._sdr_cache_ts = 0.0
         self._gps_cache = None
         self._gps_cache_ts = 0.0
+        self._kismet_mgr = None
         self.load_config()
 
     def load_config(self):
@@ -44,6 +56,7 @@ class SignalsManager:
 
         :param self: Description
         """
+        self._kismet_mgr = None
         logger.debug("Loading config file: %s", self.config_file)
 
         with open(self.config_file, "r", encoding="utf-8") as file_handle:
@@ -61,45 +74,6 @@ class SignalsManager:
             self.creds = creds
 
         return True
-
-    # def get_all_service_status(self):
-    #     """
-    #     Get a list of the status for all configured services
-
-    #     :param self: Description
-    #     """
-
-    #     logger.debug("Getting all service status")
-    #     for _, service_id  in enumerate(self.services):
-
-    #         if self.services[service_id]['type'] == "systemd":
-    #             status_data = self.systemd_svc_mgr.status_service(self.services[service_id]['system_ctl_name'])
-
-    #             if status_data:
-    #                 if status_data.get('ActiveState'):
-    #                     self.services[service_id]['current_status'] = True
-    #                 else:
-    #                     self.services[service_id]['current_status'] = False
-
-    #             else:
-    #                 self.services[service_id]['current_status'] = False
-    #         elif self.services[service_id]['type'] == "docker":
-    #             status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
-
-    #             if status_data:
-    #                 if status_data == 'running':
-    #                     self.services[service_id]['current_status'] = True
-    #                 else:
-    #                     self.services[service_id]['current_status'] = False
-    #             else:
-    #                 self.services[service_id]['current_status'] = False
-
-    #         elif self.services[service_id]['type'] == "cli":
-
-    #             if not 'cli_status_obj' in self.services[service_id]:
-    #                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
-
-    #             self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
 
     def get_single_service_status(self, service_id):
         """
@@ -196,6 +170,8 @@ class SignalsManager:
         """
         
         self._sdr_cache = None  # force fresh SDR status on next page render
+        if service_id == 'kismet':
+            self._kismet_mgr = None
         logger.debug("Calling Stop for service: %s using type %s", service_id, self.services[service_id]['type'])
 
 
@@ -241,12 +217,19 @@ class SignalsManager:
         logger.debug("Updating SDR status")
 
         # Get Status from Kismet
-        if 'kismet' in self.services and self.services['kismet']['current_status'] == "running":
+        if _kismet_rest_available and 'kismet' in self.services and self.services['kismet']['current_status'] == "running":
             logger.debug("Getting Kismet SDR usage status")
-            kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
+            if self._kismet_mgr is None:
+                self._kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
+            else:
+                try:
+                    self._kismet_mgr.get_active_datasources()
+                except Exception:
+                    logger.warning("KismetStatus refresh failed, reconnecting")
+                    self._kismet_mgr = KismetStatus(self.creds['kismet']['username'], self.creds['kismet']['password'])
 
             for index, sdr_entry in enumerate(self.sdr_data):
-                kismet_result = kismet_mgr.lookup_by_sdr_id(sdr_entry['Rtl Id'])
+                kismet_result = self._kismet_mgr.lookup_by_sdr_id(sdr_entry['Rtl Id'])
 
                 if kismet_result:
                     self.sdr_data[index]['status'] = f"Kismet: {kismet_result}"
@@ -288,6 +271,9 @@ class SignalsManager:
 
     def get_gps_status(self):
         """Query gpsd for GPS fix status and coordinates."""
+        if not _gpsd_available:
+            return {'state': 'unavailable', 'lat': None, 'lon': None, 'mode': None}
+
         now = time.time()
         if self._gps_cache is not None and (now - self._gps_cache_ts) < self._CACHE_TTL:
             logger.debug("Returning cached GPS status")
@@ -295,7 +281,6 @@ class SignalsManager:
 
         logger.debug("Querying GPS status from gpsd")
         try:
-            import gpsd
             gpsd.connect()
             gps_data = gpsd.get_current()
             mode = gps_data.mode

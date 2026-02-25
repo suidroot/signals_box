@@ -217,7 +217,7 @@ def index():
             output += f"Starting {request.form['start']}"
             manager.start_service(request.form['start'])
         elif "set_radio" in request.form:
-            manager.set_service_radio(request.form['set_radio'], request.form[f'sdr_{request.form['set_radio']}'])
+            manager.set_service_radio(request.form['set_radio'], request.form[f'sdr_{request.form["set_radio"]}'])
         elif "reload_config" in request.form:
             output += "Reloading Config File"
             manager.load_config()

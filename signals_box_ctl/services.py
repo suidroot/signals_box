@@ -17,6 +17,8 @@ supported_services = [
     'cli'
 ]
 
+logger = logging.getLogger(__name__)
+
 try:
     import dbus
     from dbus.exceptions import DBusException
@@ -32,13 +34,12 @@ try:
 except ImportError as e:
     raise Exception ("docker API not installed on system") from e
 
+_kismet_rest_available = False
 try:
     import kismet_rest
-
-except ImportError as e:
-    raise Exception ("kismet_rest not installed on system") from e
-
-logger = logging.getLogger(__name__)
+    _kismet_rest_available = True
+except ImportError:
+    logger.warning("kismet_rest not installed – Kismet integration disabled")
 
 class SystemdServiceManager:
     """
@@ -124,20 +125,17 @@ class SystemdServiceManager:
         except DBusException as exc:
             raise RuntimeError(f"Failed to restart {name}: {exc}") from exc
 
-    def status_service(self, name: str) -> None:
-        """Print a concise status summary of the unit."""
+    def status_service(self, name: str) -> dict:
+        """Return a dict with the unit's ActiveState (single targeted D-Bus Get call)."""
         try:
-            props = self.get_unit_properties(name)
-            # print(f"Service: {props.get('Id')}")
-            # print(f"  Description : {props.get('Description')}")
-            # print(f"  Load state   : {props.get('LoadState')}")
-            # print(f"  Active state : {props.get('ActiveState')}")
-            # print(f"  Sub state    : {props.get('SubState')}")
-        except RuntimeError as exc:
+            unit_obj_path = self.get_manager().GetUnit(name)
+            props_obj = self.bus.get_object("org.freedesktop.systemd1", str(unit_obj_path))
+            props_iface = dbus.Interface(props_obj, "org.freedesktop.DBus.Properties")
+            active_state = str(props_iface.Get("org.freedesktop.systemd1.Unit", "ActiveState"))
+            return {'ActiveState': active_state}
+        except (DBusException, RuntimeError) as exc:
             print(f"Failed to status {name}: {exc}")
-            props = None
-
-        return props
+            return None
 
     def list_services(self) -> None:
         """List all services, optionally filtering by a glob pattern."""
