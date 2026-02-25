@@ -5,6 +5,7 @@ This module contains the main class for managing services.
 """
 
 import logging
+import time
 import yaml
 from services import (
     SystemdServiceManager,
@@ -25,10 +26,16 @@ class SignalsManager:
     :vartype value: Any
     """
 
+    _CACHE_TTL = 10  # seconds
+
     def __init__(self, config_file="config.yml", creds_file="creds.yml"):
         self.config_file = config_file
         self.creds_file = creds_file
         self.sdr_data = None
+        self._sdr_cache = None
+        self._sdr_cache_ts = 0.0
+        self._gps_cache = None
+        self._gps_cache_ts = 0.0
         self.load_config()
 
     def load_config(self):
@@ -163,6 +170,7 @@ class SignalsManager:
         :param service_id: Description
         """
 
+        self._sdr_cache = None  # force fresh SDR status on next page render
         logger.debug("Calling Start for service: %s using type %s", service_id, self.services[service_id]['type'])
 
         if self.services[service_id]['type'] == "systemd":
@@ -187,6 +195,7 @@ class SignalsManager:
         :param service_id: Description
         """
         
+        self._sdr_cache = None  # force fresh SDR status on next page render
         logger.debug("Calling Stop for service: %s using type %s", service_id, self.services[service_id]['type'])
 
 
@@ -206,13 +215,21 @@ class SignalsManager:
     ### SDR
     def get_all_sdrs(self):
         """
-        Gather list of all SDRs
+        Gather list of all SDRs, using a short-lived cache to avoid
+        repeated USB enumeration and Kismet API calls on every page load.
         """
+
+        now = time.time()
+        if self._sdr_cache is not None and (now - self._sdr_cache_ts) < self._CACHE_TTL:
+            logger.debug("Returning cached SDR list")
+            return self._sdr_cache
 
         logger.debug("Getting all SDRs")
         usb_dev = UsbDevices()
         self.sdr_data = usb_dev.list_rtlsdr_devices()
         self.update_sdr_status()
+        self._sdr_cache = self.sdr_data
+        self._sdr_cache_ts = now
 
         return self.sdr_data
 
@@ -257,12 +274,12 @@ class SignalsManager:
         index = -1
 
         if sdr_serial:
-            index = next(i for i, d in enumerate(self.sdr_data) if d.get('Serial') == sdr_serial)
+            index = next((i for i, d in enumerate(self.sdr_data) if d.get('Serial') == sdr_serial), -1)
             if not index == -1:
                 self.services[name]['selected_sdr'] = str(sdr_serial)
                 self.sdr_data[index]['status'] = f"{self.services[name]['description']}"
         else:
-            index = next(i for i, d in enumerate(self.sdr_data) if d.get('status') == self.services[name]['description'])
+            index = next((i for i, d in enumerate(self.sdr_data) if d.get('status') == self.services[name]['description']), -1)
             if not index == -1:
                 self.services[name]['selected_sdr'] = None
                 self.sdr_data[index]['status'] = ""
@@ -274,6 +291,11 @@ class SignalsManager:
 
     def get_gps_status(self):
         """Query gpsd for GPS fix status and coordinates."""
+        now = time.time()
+        if self._gps_cache is not None and (now - self._gps_cache_ts) < self._CACHE_TTL:
+            logger.debug("Returning cached GPS status")
+            return self._gps_cache
+
         logger.debug("Querying GPS status from gpsd")
         try:
             import gpsd
@@ -281,14 +303,18 @@ class SignalsManager:
             gps_data = gpsd.get_current()
             mode = gps_data.mode
             if mode >= 2:
-                return {
+                result = {
                     'state': 'fix_3d' if mode == 3 else 'fix_2d',
                     'lat': gps_data.lat,
                     'lon': gps_data.lon,
                     'mode': mode,
                 }
             else:
-                return {'state': 'no_fix', 'lat': None, 'lon': None, 'mode': mode}
+                result = {'state': 'no_fix', 'lat': None, 'lon': None, 'mode': mode}
         except Exception as e:
             logger.warning("GPS status unavailable: %s", e)
-            return {'state': 'unavailable', 'lat': None, 'lon': None, 'mode': None}
+            result = {'state': 'unavailable', 'lat': None, 'lon': None, 'mode': None}
+
+        self._gps_cache = result
+        self._gps_cache_ts = now
+        return result
