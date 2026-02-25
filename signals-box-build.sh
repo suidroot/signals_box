@@ -2,9 +2,7 @@
 # https://gist.github.com/dragolabs/8e559113567faed32327ef24fdce775b
 
 sudo apt update
-
 sudo apt install -y git curl vim htop net-tools python3-pip python3-setuptools virtualenvwrapper docker.io docker-compose 
-
 sudo apt install gpsd gpsd-clients gpsd-tools
 # dbus-python build
 sudo apt install libglib2.0-dev libdbus-1-dev
@@ -13,7 +11,7 @@ sudo apt-get install lightdm
 
 sudo usermod -a -G docker $USER
 
-
+## IF there are mulitple Ethernet Interfaces
 nmcli connection add type bridge con-name bridge0 ifname bridge0
 nmcli connection modify bridge0 ipv4.method auto
 nmcli con mod br0 bridge.stp no
@@ -23,7 +21,6 @@ nmcli connection add type ethernet slave-type bridge con-name bridge0-port3 ifna
 nmcli connection add type ethernet slave-type bridge con-name bridge0-port4 ifname enp4s0 master bridge0
 
 ## Build RTLSDR drivers
-
 sudo apt purge ^librtlsdr
 sudo rm -rvf /usr/lib/librtlsdr* /usr/include/rtl-sdr* /usr/local/lib/librtlsdr* /usr/local/include/rtl-sdr* /usr/local/include/rtl_* /usr/local/bin/rtl_* 
 
@@ -41,6 +38,7 @@ sudo dpkg -i rtl-sdr_*.deb
 
 sudo cp rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/
 sudo udevadm trigger
+
 
 sudo usermod -a -G plugdev $USER
 sudo usermod -a -G audio $USER
@@ -90,6 +88,7 @@ sudo git clone https://github.com/pagermon/pagermon.git
 create docker-compose.yml in the `/opt/pagermon/server` directory
 
 ## Fix for client crash
+# https://github.com/pagermon/pagermon/issues/47
 # locutus@signals:~/pagermon/client$ diff reader.js reader\ copy.js
 # 121c121
 # <             message = line.match(/FLEX[:|].*[|\[][0-9 ]*[|\]] ?...[ |]{0,1}(.*)/)[1].trim();
@@ -110,8 +109,14 @@ sudo mkdir -p /opt/owrx-docker/var /opt/owrx-docker/etc /opt/owrx-docker/plugins
 sudo apt install python3-flask python3-usb python3-dbus
 # mkdir in opt
 # copy signals_box_ctl contents
+#sudo python -m venv /opt/signals_box_ctl/venv
+#cd /opt/signals_box_ctl/
+#source venv/bin/activate
+#pip install -r requirements.txt
 # put signals_ctl.service in /etc/systemd/system
 # make creds.yml for kismet access 
+
+
 
 ## ACARS
 ### libacars
