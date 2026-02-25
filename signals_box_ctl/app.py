@@ -15,7 +15,6 @@
 import logging
 import logging.config
 import subprocess
-from time import sleep
 import yaml
 from flask import Flask, request, render_template
 from signalsmanager import SignalsManager
@@ -217,7 +216,6 @@ def index():
         elif "start" in request.form:
             output += f"Starting {request.form['start']}"
             manager.start_service(request.form['start'])
-            sleep(2)
         elif "set_radio" in request.form:
             manager.set_service_radio(request.form['set_radio'], request.form[f'sdr_{request.form['set_radio']}'])
         elif "reload_config" in request.form:
