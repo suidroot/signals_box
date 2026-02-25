@@ -212,10 +212,18 @@ def index():
 
         if "stop" in request.form:
             output += f"Stopping {request.form['stop']}"
-            manager.stop_service(request.form['stop'])
+            try:
+                manager.stop_service(request.form['stop'])
+            except RuntimeError as e:
+                logger.error("Failed to stop service %s: %s", request.form['stop'], e)
+                output += f" — Error: {e}"
         elif "start" in request.form:
             output += f"Starting {request.form['start']}"
-            manager.start_service(request.form['start'])
+            try:
+                manager.start_service(request.form['start'])
+            except RuntimeError as e:
+                logger.error("Failed to start service %s: %s", request.form['start'], e)
+                output += f" — Error: {e}"
         elif "set_radio" in request.form:
             manager.set_service_radio(request.form['set_radio'], request.form[f'sdr_{request.form["set_radio"]}'])
         elif "reload_config" in request.form:
