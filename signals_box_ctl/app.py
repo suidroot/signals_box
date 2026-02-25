@@ -170,28 +170,36 @@ def render_buttons(buttons):
 
 
 def render_gps_status(gps_data):
-    """Render GPS status as an HTML string."""
+    """Render GPS status as a fixed box in the top-right corner."""
     logger.debug("Rendering GPS status")
     state = gps_data.get('state', 'unavailable')
     color_map = {
-        'unavailable': '#2727F5',  # blue  (matches 'unknown' service color)
+        'unavailable': '#2727F5',  # blue
         'no_fix':      '#F5A527',  # amber
-        'fix_2d':      '#27F527',  # green (matches 'running' service color)
+        'fix_2d':      '#27F527',  # green
         'fix_3d':      '#27F527',  # green
     }
     color = color_map.get(state, '#2727F5')
     if state in ('fix_2d', 'fix_3d'):
         fix_label = '3D Fix' if state == 'fix_3d' else '2D Fix'
-        body = (
-            f'<span style="color:{color}"><strong>GPS: {fix_label}</strong></span>'
-            f'&nbsp;&nbsp;Lat: <strong>{gps_data["lat"]:.6f}</strong>'
-            f'&nbsp;&nbsp;Lon: <strong>{gps_data["lon"]:.6f}</strong>'
-        )
+        lines = [
+            f'<span style="color:{color}"><strong>{fix_label}</strong></span>',
+            f'Lat: <strong>{gps_data["lat"]:.6f}</strong>',
+            f'Lon: <strong>{gps_data["lon"]:.6f}</strong>',
+        ]
     elif state == 'no_fix':
-        body = f'<span style="color:{color}"><strong>GPS: No Fix</strong></span>'
+        lines = [f'<span style="color:{color}"><strong>No Fix</strong></span>']
     else:
-        body = f'<span style="color:{color}"><strong>GPS: Unavailable</strong></span>'
-    return f'<p style="margin-left:5%">{body}</p>'
+        lines = [f'<span style="color:{color}"><strong>Unavailable</strong></span>']
+
+    body = '<br>'.join(lines)
+    return (
+        '<div style="position:fixed;top:20px;right:20px;'
+        'border:1px solid #aaa;border-radius:4px;padding:10px 14px;'
+        'background:#333;min-width:140px;line-height:1.8;">'
+        f'<strong>GPS</strong><br>{body}'
+        '</div>'
+    )
 
 
 manager = SignalsManager()
