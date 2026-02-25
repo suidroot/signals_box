@@ -271,3 +271,24 @@ class SignalsManager:
         # for index, sdr_entry in enumerate(self.sdr_data):
         #     if sdr_entry['Serial'] == sdr_serial:
         # self.services[name]['selected_sdr'] = sdr_serial
+
+    def get_gps_status(self):
+        """Query gpsd for GPS fix status and coordinates."""
+        logger.debug("Querying GPS status from gpsd")
+        try:
+            import gpsd
+            gpsd.connect()
+            gps_data = gpsd.get_current()
+            mode = gps_data.mode
+            if mode >= 2:
+                return {
+                    'state': 'fix_3d' if mode == 3 else 'fix_2d',
+                    'lat': gps_data.lat,
+                    'lon': gps_data.lon,
+                    'mode': mode,
+                }
+            else:
+                return {'state': 'no_fix', 'lat': None, 'lon': None, 'mode': mode}
+        except Exception as e:
+            logger.warning("GPS status unavailable: %s", e)
+            return {'state': 'unavailable', 'lat': None, 'lon': None, 'mode': None}

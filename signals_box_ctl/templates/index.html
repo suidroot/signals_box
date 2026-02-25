@@ -18,6 +18,8 @@
     <body>
       <h1 style="text-align:center">Signal Services Control Panel</h1>
       {{ cmd_output }}
+      <h3>GPS Status</h3>
+      {{ gps_status | safe }}
       <h3>SDR List</h3>
       <table border="1">
         

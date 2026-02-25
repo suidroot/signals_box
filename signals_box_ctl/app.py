@@ -170,6 +170,31 @@ def render_buttons(buttons):
     return button_text
 
 
+def render_gps_status(gps_data):
+    """Render GPS status as an HTML string."""
+    logger.debug("Rendering GPS status")
+    state = gps_data.get('state', 'unavailable')
+    color_map = {
+        'unavailable': '#2727F5',  # blue  (matches 'unknown' service color)
+        'no_fix':      '#F5A527',  # amber
+        'fix_2d':      '#27F527',  # green (matches 'running' service color)
+        'fix_3d':      '#27F527',  # green
+    }
+    color = color_map.get(state, '#2727F5')
+    if state in ('fix_2d', 'fix_3d'):
+        fix_label = '3D Fix' if state == 'fix_3d' else '2D Fix'
+        body = (
+            f'<span style="color:{color}"><strong>GPS: {fix_label}</strong></span>'
+            f'&nbsp;&nbsp;Lat: <strong>{gps_data["lat"]:.6f}</strong>'
+            f'&nbsp;&nbsp;Lon: <strong>{gps_data["lon"]:.6f}</strong>'
+        )
+    elif state == 'no_fix':
+        body = f'<span style="color:{color}"><strong>GPS: No Fix</strong></span>'
+    else:
+        body = f'<span style="color:{color}"><strong>GPS: Unavailable</strong></span>'
+    return f'<p style="margin-left:5%">{body}</p>'
+
+
 manager = SignalsManager()
 
 # --------------------------------------------------------------------
@@ -213,9 +238,12 @@ def index():
     usb_dev_list = manager.get_all_sdrs()
     sdrlist = render_sdr_list(usb_dev_list)
     button_text = render_buttons(manager.buttons)
+    gps_data = manager.get_gps_status()
+    gps_status = render_gps_status(gps_data)
 
     return render_template('index.html', cmd_output=output, sdrlist=sdrlist, \
-        service_rows=service_rows, links_table=links_table, buttons=button_text)
+        service_rows=service_rows, links_table=links_table, buttons=button_text, \
+        gps_status=gps_status)
 
 if __name__ == "__main__":
     # Run with:  sudo python3 app.py
