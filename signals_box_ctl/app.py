@@ -194,9 +194,9 @@ def render_gps_status(gps_data):
 
     body = '<br>'.join(lines)
     return (
-        '<div style="position:fixed;top:20px;right:20px;'
-        'border:1px solid #aaa;border-radius:4px;padding:10px 14px;'
-        'background:#333;min-width:140px;line-height:1.8;">'
+        '<div style="border:1px solid #aaa;border-radius:4px;padding:10px 14px;'
+        'background:#333;min-width:140px;line-height:1.8;white-space:nowrap;'
+        'align-self:flex-start;margin-top:10px;">'
         f'<strong>GPS</strong><br>{body}'
         '</div>'
     )
