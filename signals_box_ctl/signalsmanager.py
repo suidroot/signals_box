@@ -273,23 +273,18 @@ class SignalsManager:
         """
         logger.debug(f"Setting SDR with serial {sdr_serial} for service {name}")
         
-        index = -1
-
         if sdr_serial:
-            index = next((i for i, d in enumerate(self.sdr_data) if d.get('Serial') == sdr_serial), -1)
-            if not index == -1:
-                self.services[name]['selected_sdr'] = str(sdr_serial)
-                self.sdr_data[index]['status'] = f"{self.services[name]['description']}"
+            self.services[name]['selected_sdr'] = str(sdr_serial)
+            if self.sdr_data is not None:
+                index = next((i for i, d in enumerate(self.sdr_data) if d.get('Serial') == sdr_serial), -1)
+                if index != -1:
+                    self.sdr_data[index]['status'] = f"{self.services[name]['description']}"
         else:
-            index = next((i for i, d in enumerate(self.sdr_data) if d.get('status') == self.services[name]['description']), -1)
-            if not index == -1:
-                self.services[name]['selected_sdr'] = None
-                self.sdr_data[index]['status'] = ""
-
-
-        # for index, sdr_entry in enumerate(self.sdr_data):
-        #     if sdr_entry['Serial'] == sdr_serial:
-        # self.services[name]['selected_sdr'] = sdr_serial
+            self.services[name]['selected_sdr'] = None
+            if self.sdr_data is not None:
+                index = next((i for i, d in enumerate(self.sdr_data) if d.get('status') == self.services[name]['description']), -1)
+                if index != -1:
+                    self.sdr_data[index]['status'] = ""
 
     def get_gps_status(self):
         """Query gpsd for GPS fix status and coordinates."""
