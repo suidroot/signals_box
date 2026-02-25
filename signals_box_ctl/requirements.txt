@@ -8,3 +8,4 @@ pyyaml
 setuptools
 wheel
 kismet_rest
+gpsd-py3
