@@ -1,6 +1,6 @@
 # signals_box
 
-![WIP image 11-21-25](git_images/inprogress-251212.jpeg)
+![Signal Box - Current image 02-25-26](git_images/signals_box-260225-1.jpeg)
 
 This is a portable multisignal detection system. This setup is inspired by [this](https://hackaday.com/wp-content/uploads/2025/10/jawn02_busybox.jpg) built by [busysignal](https://github.com/busysignal/) which I found on a image from Jawncon 0x2 on on Hackaday. This carying case is designed to connect multiple RF sensors including RTL-SDRs and other signal specific sensors. Many of the components I already had when I started this project in an attmept to keep costs down.
 
@@ -43,7 +43,7 @@ Power
 
 ## Signal_ctl - Device and service Manager
 
-![WIP image 12-11-25](git_images/signal_ctl-251209.png)
+![signals ctl 02-25-26](git_images/signal_ctl-260225.png)
 
 This tool can use used to start and stop services, manage USB devices, and control other applications. It is designed to be a simple tool for managing your Multi SDR setup. Supported service types:
 - systemd
@@ -60,6 +60,16 @@ It will list SDR devices and the Rtl-Sdr device numbers if relavent.
 - https://github.com/pagermon
 - https://www.kismetwireless.net
 
+
+## Other Images
+
+![Signal Box - Current image 2 02-25-26](git_images/signals_box-260225-2.jpeg)
+
+![Signal Box - Current image 3 02-25-26](git_images/signals_box-260225-3.jpeg)
+
+![Signal Box - Current image 4 02-25-26](git_images/signals_box-260225-4.jpeg)
+
+
 ## TODO
 
 ### Control Software
@@ -70,3 +80,6 @@ It will list SDR devices and the Rtl-Sdr device numbers if relavent.
 
 ### System
 - [ ] Ansible Build Script
+
+## AI Note
+- Claude has been used to generate some code and features.
