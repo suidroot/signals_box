@@ -70,7 +70,7 @@ body {
 /* ── Header ────────────────────────────────────────────────── */
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   padding: 16px 4%;
   border-bottom: 1px solid var(--border-header);
   margin-bottom: 8px;
@@ -195,8 +195,6 @@ select, input[type=text] {
   min-width: 140px;
   line-height: 1.8;
   white-space: nowrap;
-  align-self: flex-start;
-  margin-top: 10px;
   font-size: 0.9em;
   box-shadow: var(--shadow-card);
 }
