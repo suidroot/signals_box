@@ -43,7 +43,7 @@ Power
 
 ## Signal_ctl - Device and service Manager
 
-![signals ctl 02-25-26](git_images/signal_ctl-260225.png)
+![signals ctl 02-25-26](git_images/signal_ctl-260225-2.png)
 
 This tool can use used to start and stop services, manage USB devices, and control other applications. It is designed to be a simple tool for managing your Multi SDR setup. Supported service types:
 - systemd
