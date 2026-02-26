@@ -1,0 +1,218 @@
+/* ── Dark theme (default) ──────────────────────────────────── */
+:root {
+  --bg-body:          #1a1a1a;
+  --bg-card:          #252525;
+  --bg-th:            #1e1e1e;
+  --bg-hover:         #2b2b2b;
+  --bg-input:         #2a2a2a;
+  --bg-cmd:           #1e1e1e;
+  --text:             #ddd;
+  --text-heading:     #eee;
+  --text-label:       #888;
+  --text-th:          #777;
+  --text-footer:      #444;
+  --border-header:    #2e2e2e;
+  --border-card:      transparent;
+  --border-table:     #2a2a2a;
+  --border-section:   #333;
+  --border-cmd:       #555;
+  --border-footer:    #2a2a2a;
+  --border-input:     #444;
+  --link:             #7eb8f7;
+  --link-hover:       #aed4ff;
+  --link-visited:     #9bafc7;
+  --shadow-card:      none;
+  --btn-start-bg:     #1a4d2a; --btn-start-fg: #5fdb7a; --btn-start-bd: #2d7a42; --btn-start-bgh: #215c33;
+  --btn-stop-bg:      #4d1a1a; --btn-stop-fg:  #db5f5f; --btn-stop-bd:  #7a2d2d; --btn-stop-bgh:  #5c2121;
+  --btn-neu-bg:       #2a2a3e; --btn-neu-fg:   #8888cc; --btn-neu-bd:   #3a3a5e; --btn-neu-bgh:   #333347;
+}
+
+/* ── Light theme ───────────────────────────────────────────── */
+body.theme-light {
+  --bg-body:          #f4f4f4;
+  --bg-card:          #ffffff;
+  --bg-th:            #f0f0f0;
+  --bg-hover:         #f5f7fa;
+  --bg-input:         #ffffff;
+  --bg-cmd:           #eef2f7;
+  --text:             #222;
+  --text-heading:     #111;
+  --text-label:       #555;
+  --text-th:          #555;
+  --text-footer:      #999;
+  --border-header:    #e0e0e0;
+  --border-card:      #e0e0e0;
+  --border-table:     #eeeeee;
+  --border-section:   #ddd;
+  --border-cmd:       #94b0c8;
+  --border-footer:    #e0e0e0;
+  --border-input:     #ccc;
+  --link:             #1a6fc4;
+  --link-hover:       #0d4d8a;
+  --link-visited:     #6b5fa0;
+  --shadow-card:      0 1px 4px rgba(0,0,0,0.08);
+  --btn-start-bg:     #d4edda; --btn-start-fg: #155724; --btn-start-bd: #b1dfbb; --btn-start-bgh: #c3e6cb;
+  --btn-stop-bg:      #f8d7da; --btn-stop-fg:  #721c24; --btn-stop-bd:  #f5c6cb; --btn-stop-bgh:  #f1b0b7;
+  --btn-neu-bg:       #e8eaf6; --btn-neu-fg:   #3949ab; --btn-neu-bd:   #c5cae9; --btn-neu-bgh:   #d9ddf0;
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-body);
+  color: var(--text);
+  margin: 0;
+  padding: 0 0 40px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px 4%;
+  border-bottom: 1px solid var(--border-header);
+  margin-bottom: 8px;
+}
+.page-header h1 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 1.5em;
+  color: var(--text-heading);
+}
+
+/* ── Theme toggle ──────────────────────────────────────────── */
+.theme-toggle {
+  align-self: center;
+  margin-right: 12px;
+  padding: 5px 10px;
+  background: none;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  color: var(--text-label);
+  cursor: pointer;
+  font-size: 0.8em;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--text-label); }
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin: 12px auto;
+  width: 92%;
+  box-shadow: var(--shadow-card);
+}
+.card h3 {
+  color: var(--text-label);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-section);
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── Tables ────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--bg-th);
+  color: var(--text-th);
+  text-align: left;
+  padding: 10px 8px;
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--border-section);
+}
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-table);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+
+/* ── Links ─────────────────────────────────────────────────── */
+a { color: var(--link); text-decoration: none; }
+a:hover { color: var(--link-hover); text-decoration: underline; }
+a:visited { color: var(--link-visited); }
+
+/* ── Form controls ─────────────────────────────────────────── */
+select, input[type=text] {
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.85em;
+  font-family: inherit;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn {
+  margin: 2px 3px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-start   { background: var(--btn-start-bg); color: var(--btn-start-fg); border-color: var(--btn-start-bd); }
+.btn-start:hover   { background: var(--btn-start-bgh); }
+.btn-stop    { background: var(--btn-stop-bg);  color: var(--btn-stop-fg);  border-color: var(--btn-stop-bd); }
+.btn-stop:hover    { background: var(--btn-stop-bgh); }
+.btn-neutral { background: var(--btn-neu-bg);   color: var(--btn-neu-fg);   border-color: var(--btn-neu-bd); }
+.btn-neutral:hover { background: var(--btn-neu-bgh); }
+
+/* ── Command output ────────────────────────────────────────── */
+.cmd-output {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  background: var(--bg-cmd);
+  border-left: 3px solid var(--border-cmd);
+  padding: 8px 14px;
+  margin: 8px auto;
+  width: 92%;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.9em;
+}
+
+/* ── GPS box ───────────────────────────────────────────────── */
+.gps-box {
+  border: 1px solid var(--border-section);
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  min-width: 140px;
+  line-height: 1.8;
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: 10px;
+  font-size: 0.9em;
+  box-shadow: var(--shadow-card);
+}
+.gps-label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-label);
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 16px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-footer);
+  color: var(--text-footer);
+  font-size: 0.8em;
+}
