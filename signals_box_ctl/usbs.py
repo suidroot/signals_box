@@ -78,7 +78,7 @@ class UsbDevices:
         
         try:
             rtl_id = RtlSdr.get_device_index_by_serial(serial_str)
-        except:
+        except Exception:
             logger.error(f"Could not get RTL-SDR device number for serial {serial_str}")
             rtl_id = "na"
 

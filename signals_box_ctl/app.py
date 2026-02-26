@@ -18,9 +18,6 @@ import subprocess
 import yaml
 from flask import Flask, request, render_template
 from signalsmanager import SignalsManager
-# from services import SystemdServiceManager, CliService, DockerService, KismetStatus
-# from usbs import UsbDevices
-
 
 app = Flask(__name__)
 
@@ -71,7 +68,7 @@ def render_sdr_drop_list(usb_dev_list, name, select_default=None):
     """
     logger.debug("Rendering SDR Drop for Service")
 
-    selection = f"<select NAME=\"sdr_{name}\">\n"
+    selection = f"<select name=\"sdr_{name}\">\n"
     selection += """<option value="">Select SDR</option>\n"""
 
     for sdr_entry in usb_dev_list:
@@ -129,7 +126,7 @@ def render_service_toggles(render_manager):
 
             if 'freq_input' in render_manager.services[service_id]:
                 freq_value = render_manager.services[service_id]['freq_input']
-                freq_input = f"<input type=\"text\" name=\"freq_{service_id}\", value=\"{freq_value}\" size=\"11\"></input>"
+                freq_input = f"<input type=\"text\" name=\"freq_{service_id}\" value=\"{freq_value}\" size=\"11\">"
 
             set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\" class=\"btn btn-neutral\">Set Radio</button>"
 
@@ -228,14 +225,27 @@ def index():
                 logger.error("Failed to start service %s: %s", request.form['start'], e)
                 output += f" — Error: {e}"
         elif "set_radio" in request.form:
-            manager.set_service_radio(request.form['set_radio'], request.form[f'sdr_{request.form["set_radio"]}'])
+            service_id = request.form['set_radio']
+            sdr_key = f'sdr_{service_id}'
+            if sdr_key in request.form:
+                manager.set_service_radio(service_id, request.form[sdr_key])
+            else:
+                logger.warning("set_radio POST missing SDR key for service %s", service_id)
         elif "reload_config" in request.form:
             output += "Reloading Config File"
             manager.load_config()
         elif "shutdown" in request.form:
-            subprocess.run(manager.buttons['shutdown']['cli_command'])
+            try:
+                subprocess.run(manager.buttons['shutdown']['cli_command'], check=True)
+            except (subprocess.CalledProcessError, KeyError) as e:
+                logger.error("Shutdown command failed: %s", e)
+                output += f"Shutdown failed: {e}"
         elif "reboot" in request.form:
-            subprocess.run(manager.buttons['reboot']['cli_command'])
+            try:
+                subprocess.run(manager.buttons['reboot']['cli_command'], check=True)
+            except (subprocess.CalledProcessError, KeyError) as e:
+                logger.error("Reboot command failed: %s", e)
+                output += f"Reboot failed: {e}"
 
     links_table = ""
     links_table = '<p name="links">\n'

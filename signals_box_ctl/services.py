@@ -102,7 +102,7 @@ class SystemdServiceManager:
         manager = self.get_manager()
         try:
             manager.StartUnit(name, "replace")  # 'replace' mode starts it immediately
-            print(f"✅  Started {name}")
+            logger.info("Started %s", name)
         except DBusException as exc:
             raise RuntimeError(f"Failed to start {name}: {exc}") from exc
 
@@ -112,7 +112,7 @@ class SystemdServiceManager:
         manager = self.get_manager()
         try:
             manager.StopUnit(name, "replace")
-            print(f"🛑  Stopped {name}")
+            logger.info("Stopped %s", name)
         except DBusException as exc:
             raise RuntimeError(f"Failed to stop {name}: {exc}") from exc
 
@@ -121,7 +121,7 @@ class SystemdServiceManager:
         manager = self.get_manager()
         try:
             manager.RestartUnit(name, "replace")
-            print(f"🔄  Restarted {name}")
+            logger.info("Restarted %s", name)
         except DBusException as exc:
             raise RuntimeError(f"Failed to restart {name}: {exc}") from exc
 
@@ -134,7 +134,7 @@ class SystemdServiceManager:
             active_state = str(props_iface.Get("org.freedesktop.systemd1.Unit", "ActiveState"))
             return {'ActiveState': active_state}
         except (DBusException, RuntimeError) as exc:
-            print(f"Failed to status {name}: {exc}")
+            logger.error("Failed to status %s: %s", name, exc)
             return None
 
     def list_services(self) -> None:
@@ -201,7 +201,7 @@ class CliService:
         self.cmd_line: str = config["cmd_line"]
         self.autostart: bool = config.get("autostart", False)
         self.require_sdr: bool = config.get("require_sdr", False)
-        self.cwd: bool = config.get("working_dir", None)
+        self.cwd: Optional[str] = config.get("working_dir", None)
 
         # All remaining keys are treated as optional params for placeholder replacement
         self.params: Dict[str, Any] = {k: v for k, v in config.items()
@@ -253,8 +253,6 @@ class CliService:
             If the service is already running or if the process cannot be started.
         """
         with self._lock:
-            # self._ensure_not_running()
-
             # Perform placeholder substitution
             full_cmd = _substitute_placeholders(self.cmd_line, self.params)
             cmd_parts = _parse_command(full_cmd)
@@ -317,8 +315,8 @@ class CliService:
             If None, the call blocks indefinitely until the process exits.
         """
         with self._lock:
-            # self._ensure_running()
-            assert self._proc is not None
+            if self._proc is None:
+                raise RuntimeError(f"Service '{self.svc_id}' is not running")
 
             logger.info("Stopping service '%s'", self.svc_id)
             try:
@@ -367,7 +365,7 @@ class DockerService:
 
             status = container.start()
         except docker.errors.NotFound:
-            print(f"🛑  {container_name} not found")
+            logger.error("Container %s not found", container_name)
             status = False
 
         return status
@@ -380,7 +378,7 @@ class DockerService:
             container = self.docker_client.containers.get(container_name)
             status = container.stop()
         except docker.errors.NotFound:
-            print(f"🛑  {container_name} not found")
+            logger.error("Container %s not found", container_name)
             status = False
 
         return status
@@ -394,7 +392,7 @@ class DockerService:
             container = self.docker_client.containers.get(container_name)
             status = container.restart()
         except docker.errors.NotFound:
-            print(f"🛑  {container_name} not found")
+            logger.error("Container %s not found", container_name)
             status = False
 
         return status
@@ -410,7 +408,7 @@ class DockerService:
 
             status = container_state['Status']
         except docker.errors.NotFound:
-            print(f"🛑  {container_name} not found")
+            logger.error("Container %s not found", container_name)
             status = False
 
         return status
@@ -422,10 +420,9 @@ class KismetStatus:
 
     def __init__(self, username, password) -> None:
         '''
-            Initthe class
+            Initialize the class.
             :param username: The username to use when connecting to Kismet
-            :param password: The password to use when connecting to
-
+            :param password: The password to use when connecting to Kismet
         '''
         self.datasources = {}
         self.kismet_datasources = None
@@ -459,12 +456,6 @@ class KismetStatus:
                 'sdr_id' : int(sdr_id),
                 'uuid' : source['kismet.datasource.uuid'],
             }
-
-    # def get_all_datasources(self):
-    #     """Get the list of available data sources."""
-    #     datasources = []
-    #     # for source in self.kismet_datasources.interfaces():
-    #     pass
 
     def lookup_by_sdr_id(self, sdr_id):
         """Look up a datasource by its ID."""

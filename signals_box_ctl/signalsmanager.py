@@ -5,6 +5,7 @@ This module contains the main class for managing services.
 """
 
 import logging
+import threading
 import time
 import yaml
 
@@ -45,6 +46,7 @@ class SignalsManager:
         self.sdr_data = None
         self._sdr_cache = None
         self._sdr_cache_ts = 0.0
+        self._sdr_lock = threading.Lock()
         self._gps_cache = None
         self._gps_cache_ts = 0.0
         self._kismet_mgr = None
@@ -57,21 +59,44 @@ class SignalsManager:
         :param self: Description
         """
         self._kismet_mgr = None
+
+        # Stop any running CLI services before replacing the config dict so
+        # their processes are not orphaned when self.services is reassigned.
+        if hasattr(self, 'services'):
+            for svc_id, svc in self.services.items():
+                if svc.get('type') == 'cli' and 'cli_status_obj' in svc:
+                    try:
+                        if svc['cli_status_obj'].is_running():
+                            logger.info("Stopping CLI service '%s' before config reload", svc_id)
+                            svc['cli_status_obj'].stop()
+                    except Exception:
+                        logger.warning("Failed to stop CLI service '%s' during config reload", svc_id)
+
         logger.debug("Loading config file: %s", self.config_file)
 
-        with open(self.config_file, "r", encoding="utf-8") as file_handle:
-            cfg = yaml.safe_load(file_handle)
-            self.services = cfg['services']
-            self.http_base_url = cfg['http_base_url']
-            self.links = cfg['links']
-            self.buttons = cfg['buttons']
+        try:
+            with open(self.config_file, "r", encoding="utf-8") as file_handle:
+                cfg = yaml.safe_load(file_handle)
+                self.services = cfg['services']
+                self.http_base_url = cfg['http_base_url']
+                self.links = cfg['links']
+                self.buttons = cfg['buttons']
 
-            self.systemd_svc_mgr = SystemdServiceManager()
-            self.docker_svc_mgr = DockerService()
+                self.systemd_svc_mgr = SystemdServiceManager()
+                self.docker_svc_mgr = DockerService()
+        except FileNotFoundError:
+            logger.critical("Config file not found: %s", self.config_file)
+            raise
+        except (KeyError, TypeError) as e:
+            logger.critical("Invalid config file %s: missing key %s", self.config_file, e)
+            raise
 
-        with open(self.creds_file, "r", encoding="utf-8") as credfile_handle:
-            creds = yaml.safe_load(credfile_handle)
-            self.creds = creds
+        try:
+            with open(self.creds_file, "r", encoding="utf-8") as credfile_handle:
+                self.creds = yaml.safe_load(credfile_handle)
+        except FileNotFoundError:
+            logger.critical("Credentials file not found: %s", self.creds_file)
+            raise
 
         return True
 
@@ -101,7 +126,6 @@ class SignalsManager:
                 active_state = status_data.get('ActiveState')
                 if active_state == 'active':
                     status = 'running'
-                    # status = status_data.get('ActiveState')
                 elif active_state == 'deactivating':
                     status = "stopping"
                 elif active_state == 'inactive':
@@ -126,9 +150,8 @@ class SignalsManager:
 
             if not 'cli_status_obj' in self.services[service_id]:
                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
-            self.services[service_id]['current_status'] = self.services[service_id]['cli_status_obj'].is_running()
 
-            if self.services[service_id]['current_status']:
+            if self.services[service_id]['cli_status_obj'].is_running():
                 status = 'running'
             else:
                 status = "stopped"
@@ -182,7 +205,6 @@ class SignalsManager:
         elif self.services[service_id]['type'] == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
                 logger.error("No cli service object found for %s", service_id)
-                # self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
             else:
                 self.services[service_id]['cli_status_obj'].stop()
 
@@ -200,12 +222,19 @@ class SignalsManager:
             logger.debug("Returning cached SDR list")
             return self._sdr_cache
 
-        logger.debug("Getting all SDRs")
-        usb_dev = UsbDevices()
-        self.sdr_data = usb_dev.list_rtlsdr_devices()
-        self.update_sdr_status()
-        self._sdr_cache = self.sdr_data
-        self._sdr_cache_ts = now
+        with self._sdr_lock:
+            # Re-check under lock so concurrent requests don't both enumerate USB
+            now = time.time()
+            if self._sdr_cache is not None and (now - self._sdr_cache_ts) < self._CACHE_TTL:
+                logger.debug("Returning cached SDR list")
+                return self._sdr_cache
+
+            logger.debug("Getting all SDRs")
+            usb_dev = UsbDevices()
+            self.sdr_data = usb_dev.list_rtlsdr_devices()
+            self.update_sdr_status()
+            self._sdr_cache = self.sdr_data
+            self._sdr_cache_ts = now
 
         return self.sdr_data
 
@@ -238,17 +267,16 @@ class SignalsManager:
 
         logger.debug("Updating %s SDR status" % len(self.services))
         for service_entry in self.services:
-            index = -1
             if self.services[service_entry]['require_sdr'] and \
                 self.services[service_entry]['current_status'] == 'running' and \
                 self.services[service_entry]['selected_sdr']:
-                    try:
-                        index = next(i for i, d in enumerate(self.sdr_data) if d.get('Serial') == str(self.services[service_entry]['selected_sdr']))
-                        if not index == -1:
-                            self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
-
-                    except StopIteration:
-                        logger.error(f"Could not find SDR with serial {self.services[service_entry]['selected_sdr']} for service {service_entry}")
+                    index = next((i for i, d in enumerate(self.sdr_data)
+                                  if d.get('Serial') == str(self.services[service_entry]['selected_sdr'])), -1)
+                    if index != -1:
+                        self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
+                    else:
+                        logger.error("Could not find SDR with serial %s for service %s",
+                                     self.services[service_entry]['selected_sdr'], service_entry)
 
     def set_service_radio(self, name, sdr_serial):
         """
