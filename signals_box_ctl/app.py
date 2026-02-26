@@ -100,6 +100,14 @@ def render_service_toggles(render_manager):
         'stopped'       : "#F52727", # red #f8d7da
     }
 
+    # Update all current_status values first so get_all_sdrs/update_sdr_status
+    # sees fresh data when annotating which SDR each service is using.
+    service_statuses = {}
+    for service_id in render_manager.services:
+        status, _ = render_manager.get_single_service_status(service_id)
+        render_manager.services[service_id]['current_status'] = status
+        service_statuses[service_id] = status
+
     usb_dev_list = render_manager.get_all_sdrs()
 
     table_rows = ["<tr><th>Service</th><th>Status</th><th>Select SDR</th><th>Freq</th><th>Link</th><th>Actions</th></tr>"]
@@ -110,8 +118,7 @@ def render_service_toggles(render_manager):
         link = ""
         sdr_selection = ""
 
-        status, _ = render_manager.get_single_service_status(service_id)
-        render_manager.services[service_id]['current_status'] = status
+        status = service_statuses[service_id]
         color = statuses.get(status, "#2727F5")
 
         if render_manager.services[service_id]['link']:
