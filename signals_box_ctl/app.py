@@ -52,15 +52,13 @@ def render_sdr_list(usb_dev_list):
     ]
 
     for sdr_entry in usb_dev_list:
-
-            # Manufacturer</th><th>Product</th><th>Serial Number</th><th>Rtl Id</th><th>Status<
         row = f"""
         <tr>
-            <td style="width:20%">{sdr_entry['Manufacturer']}</strong></td>
-            <td style="width:20%">{sdr_entry['Product']}</td>
-            <td style="width:20%">{sdr_entry['Serial']}</td>
-            <td style="width:5%">{sdr_entry['Rtl Id']}</td>
-            <td style="width:10%">{sdr_entry['status']}</td>
+            <td>{sdr_entry['Manufacturer']}</td>
+            <td>{sdr_entry['Product']}</td>
+            <td>{sdr_entry['Serial']}</td>
+            <td>{sdr_entry['Rtl Id']}</td>
+            <td>{sdr_entry['status']}</td>
         </tr>
         """
         table_rows.append(row)
@@ -107,7 +105,7 @@ def render_service_toggles(render_manager):
 
     usb_dev_list = render_manager.get_all_sdrs()
 
-    table_rows = ["<tr><th></th><th>Service</th><th>Status</th><th>Select SDR</th><th>Freq</th><th>Link</th><th>Actions</th></tr>"]
+    table_rows = ["<tr><th>Service</th><th>Status</th><th>Select SDR</th><th>Freq</th><th>Link</th><th>Actions</th></tr>"]
     for _, service_id in enumerate(render_manager.services):
 
         set_radio_button = ""
@@ -133,20 +131,19 @@ def render_service_toggles(render_manager):
                 freq_value = render_manager.services[service_id]['freq_input']
                 freq_input = f"<input type=\"text\" name=\"freq_{service_id}\", value=\"{freq_value}\" size=\"11\"></input>"
 
-            set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\">Set Radio</button>"
-            
+            set_radio_button = f"<button type=\"submit\" name=\"set_radio\" value=\"{service_id}\" class=\"btn btn-neutral\">Set Radio</button>"
+
         # Build Row HTML
         row = f"""
         <tr>
-            <td style="background:{color}; width:2%">&nbsp;</td>
-            <td style="width:20%"><strong>{render_manager.services[service_id]['description']}</strong></td>
-            <td style="width:10%">{status}</td>
-            <td style="width:20%">{sdr_selection}</td>
-            <td style="width:10%">{freq_input}</td>
-            <td style="width:20%">{link}</td>
-            <td style="width:20%" align="right">
-                <button type="submit" name="start" value="{service_id}">Start</button>
-                <button type="submit" name="stop" value="{service_id}">Stop</button>
+            <td style="border-left:4px solid {color};padding-left:12px;"><strong>{render_manager.services[service_id]['description']}</strong></td>
+            <td>{status}</td>
+            <td>{sdr_selection}</td>
+            <td>{freq_input}</td>
+            <td>{link}</td>
+            <td align="right">
+                <button type="submit" name="start" value="{service_id}" class="btn btn-start">Start</button>
+                <button type="submit" name="stop" value="{service_id}" class="btn btn-stop">Stop</button>
                 {set_radio_button}
             </td>
         </tr>
@@ -163,7 +160,7 @@ def render_buttons(buttons):
     logger.debug("Rendering Buttons")
     button_text = ""
     for button_name in buttons:
-        button_text += f"<button {buttons[button_name]['html_command']} name={buttons[button_name]['name']} class=\"btn\">{buttons[button_name]['text']}</button>\n"
+        button_text += f"<button {buttons[button_name]['html_command']} name={buttons[button_name]['name']} class=\"btn btn-neutral\">{buttons[button_name]['text']}</button>\n"
     button_text += "</p>\n"
 
     return button_text
@@ -194,10 +191,10 @@ def render_gps_status(gps_data):
 
     body = '<br>'.join(lines)
     return (
-        '<div style="border:1px solid #aaa;border-radius:4px;padding:10px 14px;'
-        'background:#333;min-width:140px;line-height:1.8;white-space:nowrap;'
-        'align-self:flex-start;margin-top:10px;">'
-        f'<strong>GPS</strong><br>{body}'
+        '<div style="border:1px solid #333;border-radius:6px;padding:10px 14px;'
+        'background:#252525;min-width:140px;line-height:1.8;white-space:nowrap;'
+        'align-self:flex-start;margin-top:10px;font-size:0.9em;">'
+        f'<strong style="font-size:0.75em;text-transform:uppercase;letter-spacing:0.1em;color:#888;">GPS</strong><br>{body}'
         '</div>'
     )
 
