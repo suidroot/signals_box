@@ -64,20 +64,23 @@ def render_sdr_list(usb_dev_list):
 
 def render_sdr_drop_list(usb_dev_list, name, select_default=None):
     """
-    Render HTML Drop down list of SDR detected on the system.
+    Render HTML multi-select list of SDR detected on the system.
     """
     logger.debug("Rendering SDR Drop for Service")
 
-    selection = f"<select name=\"sdr_{name}\">\n"
-    selection += """<option value="">Select SDR</option>\n"""
+    size = max(2, len(usb_dev_list))
+    selection = f'<select name="sdr_{name}" multiple size="{size}">\n'
+
+    if select_default is None:
+        defaults = set()
+    elif isinstance(select_default, list):
+        defaults = {str(s) for s in select_default}
+    else:
+        defaults = {str(select_default)}
 
     for sdr_entry in usb_dev_list:
-        selected = ""
-
-        if select_default and sdr_entry['Serial'] == select_default:
-            selected = " selected"
-
-        selection += f"""<option value="{sdr_entry['Serial']}"{selected}>{sdr_entry['Manufacturer']} {sdr_entry['Product']} {sdr_entry['Serial']}</option>\n"""
+        selected = ' selected' if sdr_entry['Serial'] in defaults else ''
+        selection += f'<option value="{sdr_entry["Serial"]}"{selected}>{sdr_entry["Manufacturer"]} {sdr_entry["Product"]} {sdr_entry["Serial"]}</option>\n'
 
     selection += "</select>"
 
@@ -234,10 +237,7 @@ def index():
         elif "set_radio" in request.form:
             service_id = request.form['set_radio']
             sdr_key = f'sdr_{service_id}'
-            if sdr_key in request.form:
-                manager.set_service_radio(service_id, request.form[sdr_key])
-            else:
-                logger.warning("set_radio POST missing SDR key for service %s", service_id)
+            manager.set_service_radio(service_id, request.form.getlist(sdr_key))
         elif "reload_config" in request.form:
             output += "Reloading Config File"
             manager.load_config()

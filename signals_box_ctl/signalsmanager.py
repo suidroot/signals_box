@@ -270,32 +270,44 @@ class SignalsManager:
             if self.services[service_entry]['require_sdr'] and \
                 self.services[service_entry]['current_status'] == 'running' and \
                 self.services[service_entry]['selected_sdr']:
-                    index = next((i for i, d in enumerate(self.sdr_data)
-                                  if d.get('Serial') == str(self.services[service_entry]['selected_sdr'])), -1)
-                    if index != -1:
-                        self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
-                    else:
-                        logger.error("Could not find SDR with serial %s for service %s",
-                                     self.services[service_entry]['selected_sdr'], service_entry)
+                    selected = self.services[service_entry]['selected_sdr']
+                    if isinstance(selected, str):
+                        selected = [selected]
+                    for serial in selected:
+                        index = next((i for i, d in enumerate(self.sdr_data)
+                                      if d.get('Serial') == str(serial)), -1)
+                        if index != -1:
+                            self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
+                        else:
+                            logger.error("Could not find SDR with serial %s for service %s",
+                                         serial, service_entry)
 
-    def set_service_radio(self, name, sdr_serial):
+    def set_service_radio(self, name, sdr_serials):
         """
-        Set the radio to be used by a given service
+        Set the radio(s) to be used by a given service.
+        sdr_serials: list of serial number strings (empty list to clear).
         """
-        logger.debug(f"Setting SDR with serial {sdr_serial} for service {name}")
-        
-        if sdr_serial:
-            self.services[name]['selected_sdr'] = str(sdr_serial)
+        logger.debug("Setting SDRs %s for service %s", sdr_serials, name)
+
+        # Clear previous status annotations
+        if self.sdr_data is not None:
+            old = self.services[name].get('selected_sdr') or []
+            if isinstance(old, str):
+                old = [old]
+            for serial in old:
+                idx = next((i for i, d in enumerate(self.sdr_data) if d.get('Serial') == str(serial)), -1)
+                if idx != -1:
+                    self.sdr_data[idx]['status'] = ""
+
+        if sdr_serials:
+            self.services[name]['selected_sdr'] = [str(s) for s in sdr_serials]
             if self.sdr_data is not None:
-                index = next((i for i, d in enumerate(self.sdr_data) if d.get('Serial') == sdr_serial), -1)
-                if index != -1:
-                    self.sdr_data[index]['status'] = f"{self.services[name]['description']}"
+                for serial in sdr_serials:
+                    idx = next((i for i, d in enumerate(self.sdr_data) if d.get('Serial') == str(serial)), -1)
+                    if idx != -1:
+                        self.sdr_data[idx]['status'] = f"{self.services[name]['description']}"
         else:
             self.services[name]['selected_sdr'] = None
-            if self.sdr_data is not None:
-                index = next((i for i, d in enumerate(self.sdr_data) if d.get('status') == self.services[name]['description']), -1)
-                if index != -1:
-                    self.sdr_data[index]['status'] = ""
 
     def get_gps_status(self):
         """Query gpsd for GPS fix status and coordinates."""
