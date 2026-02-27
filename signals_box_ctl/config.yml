@@ -37,6 +37,7 @@ services:
         default_sdr: '77771111153705700'
         selected_sdr: '77771111153705700'
         require_sdr: true
+        multi_sdr: false
     intercept:
         type: docker
         container_name: intercept_local
@@ -45,6 +46,7 @@ services:
         current_status: null
         autostart: false
         require_sdr: true
+        multi_sdr: true
         default_sdr: null
         selected_sdr: null
     pagermon_server:
@@ -65,6 +67,7 @@ services:
         autostart: false
         current_status: null
         require_sdr: true
+        multi_sdr: false
         freq_input: "152.592M"
         default_sdr: null
         selected_sdr: null
@@ -79,6 +82,7 @@ services:
         default_sdr: null
         selected_sdr: null
         require_sdr: true
+        multi_sdr: false
         freq_input: "929.612M"
         link: null
 

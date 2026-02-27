@@ -62,14 +62,19 @@ def render_sdr_list(usb_dev_list):
 
     return ''.join(table_rows)
 
-def render_sdr_drop_list(usb_dev_list, name, select_default=None):
+def render_sdr_drop_list(usb_dev_list, name, select_default=None, multi=False):
     """
-    Render HTML multi-select list of SDR detected on the system.
+    Render HTML select list of SDR detected on the system.
+    multi=True renders a multi-select listbox; multi=False renders a single-select dropdown.
     """
     logger.debug("Rendering SDR Drop for Service")
 
-    size = max(2, len(usb_dev_list))
-    selection = f'<select name="sdr_{name}" multiple size="{size}">\n'
+    if multi:
+        size = max(2, len(usb_dev_list))
+        selection = f'<select name="sdr_{name}" multiple size="{size}">\n'
+    else:
+        selection = f'<select name="sdr_{name}">\n'
+        selection += '<option value="">Select SDR</option>\n'
 
     if select_default is None:
         defaults = set()
@@ -128,11 +133,13 @@ def render_service_toggles(render_manager):
             link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
             
         if render_manager.services[service_id]['require_sdr']:
+            multi = render_manager.services[service_id].get('multi_sdr', False)
             if 'default_sdr' in render_manager.services[service_id]:
-                sdr_selection = render_sdr_drop_list(usb_dev_list, service_id, \
-                    select_default=render_manager.services[service_id]['selected_sdr'])
+                sdr_selection = render_sdr_drop_list(usb_dev_list, service_id,
+                    select_default=render_manager.services[service_id]['selected_sdr'],
+                    multi=multi)
             else:
-                sdr_selection = render_sdr_drop_list(usb_dev_list, service_id)
+                sdr_selection = render_sdr_drop_list(usb_dev_list, service_id, multi=multi)
 
             if 'freq_input' in render_manager.services[service_id]:
                 freq_value = render_manager.services[service_id]['freq_input']
