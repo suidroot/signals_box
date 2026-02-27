@@ -97,12 +97,12 @@ class SignalsManager:
             raise
 
         # init Service values
-        for svc in self.services.items():
+        for svc in self.services:
             if not 'current_status' in self.services[svc]:
                 self.services[svc]['current_status'] = None
 
             if not 'selected_sdr' in self.services[svc]:
-                self.services[svc]['selected_sdr'] = self.services[svc]['default_sdr']
+                self.services[svc]['selected_sdr'] = self.services[svc].get('default_sdr', None)
 
         logger.debug("Loading Credentials file: %s", self.creds_file)
         try:
