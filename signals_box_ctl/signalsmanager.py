@@ -3,11 +3,21 @@
 """
 This module contains the main class for managing services.
 """
-
 import logging
 import threading
 import time
 import yaml
+from services import (
+    SystemdServiceManager,
+    CliService,
+    DockerService,
+
+    KismetStatus,
+    _kismet_rest_available,
+)
+from usbs import UsbDevices
+
+
 
 _gpsd_available = False
 try:
@@ -16,15 +26,7 @@ try:
 except ImportError:
     pass  # GPS integration disabled; get_gps_status() will return 'unavailable'
 
-from services import (
-    SystemdServiceManager,
-    CliService,
-    DockerService,
-    KismetStatus,
-    supported_services,
-    _kismet_rest_available,
-)
-from usbs import UsbDevices
+
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +100,7 @@ class SignalsManager:
         for svc in self.services.items():
             if not 'current_status' in self.services[svc]:
                 self.services[svc]['current_status'] = None
-            
+
             if not 'selected_sdr' in self.services[svc]:
                 self.services[svc]['selected_sdr'] = self.services[svc]['default_sdr']
 
@@ -203,7 +205,7 @@ class SignalsManager:
         :param self: Description
         :param service_id: Description
         """
-        
+
         self._sdr_cache = None  # force fresh SDR status on next page render
         if service_id == 'kismet':
             self._kismet_mgr = None
@@ -277,22 +279,22 @@ class SignalsManager:
 
         # Get Status from other Services
 
-        logger.debug("Updating %s SDR status" % len(self.services))
+        logger.debug("Updating %s SDR status", len(self.services))
         for service_entry in self.services:
             if self.services[service_entry]['require_sdr'] and \
-                self.services[service_entry]['current_status'] == 'running' and \
-                self.services[service_entry]['selected_sdr']:
-                    selected = self.services[service_entry]['selected_sdr']
-                    if isinstance(selected, str):
-                        selected = [selected]
-                    for serial in selected:
-                        index = next((i for i, d in enumerate(self.sdr_data)
-                                      if d.get('Serial') == str(serial)), -1)
-                        if index != -1:
-                            self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
-                        else:
-                            logger.error("Could not find SDR with serial %s for service %s",
-                                         serial, service_entry)
+               self.services[service_entry]['current_status'] == 'running' and \
+               self.services[service_entry]['selected_sdr']:
+                selected = self.services[service_entry]['selected_sdr']
+                if isinstance(selected, str):
+                    selected = [selected]
+                for serial in selected:
+                    index = next((i for i, d in enumerate(self.sdr_data)
+                                    if d.get('Serial') == str(serial)), -1)
+                    if index != -1:
+                        self.sdr_data[index]['status'] = f"{self.services[service_entry]['description']}"
+                    else:
+                        logger.error("Could not find SDR with serial %s for service %s",
+                                        serial, service_entry)
 
     def set_service_radio(self, name, sdr_serials):
         """

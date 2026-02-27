@@ -131,7 +131,7 @@ def render_service_toggles(render_manager):
 
         if render_manager.services[service_id]['link']:
             link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
-            
+
         if render_manager.services[service_id]['require_sdr']:
             multi = render_manager.services[service_id].get('multi_sdr', False)
             if 'default_sdr' in render_manager.services[service_id]:
@@ -225,7 +225,7 @@ def index():
     output = ""
 
     if request.method == "POST":
-        logger.debug(f"POST received {request.form}")
+        logger.debug("POST received %s", request.form)
 
         if "stop" in request.form:
             output += f"Stopping {request.form['stop']}"
