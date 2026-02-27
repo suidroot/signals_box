@@ -58,12 +58,15 @@ class SignalsManager:
 
         :param self: Description
         """
+
+        logger.debug("Loading Config file: %s", self.config_file)
         self._kismet_mgr = None
 
         # Stop any running CLI services before replacing the config dict so
         # their processes are not orphaned when self.services is reassigned.
         if hasattr(self, 'services'):
             for svc_id, svc in self.services.items():
+
                 if svc.get('type') == 'cli' and 'cli_status_obj' in svc:
                     try:
                         if svc['cli_status_obj'].is_running():
@@ -91,6 +94,15 @@ class SignalsManager:
             logger.critical("Invalid config file %s: missing key %s", self.config_file, e)
             raise
 
+        # init Service values
+        for svc in self.services.items():
+            if not 'current_status' in self.services[svc]:
+                self.services[svc]['current_status'] = None
+            
+            if not 'selected_sdr' in self.services[svc]:
+                self.services[svc]['selected_sdr'] = self.services[svc]['default_sdr']
+
+        logger.debug("Loading Credentials file: %s", self.creds_file)
         try:
             with open(self.creds_file, "r", encoding="utf-8") as credfile_handle:
                 self.creds = yaml.safe_load(credfile_handle)

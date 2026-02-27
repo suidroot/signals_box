@@ -1,62 +1,37 @@
-http_base_url: http://signals.local
+http_base_url: http://intrepid.local
 
 pid_file_location: ""
 
 services:
-  #icecase:
-      #   system_ctl_name: icecast2.service
-      #  type: systemd
-      #  description: Icecast
-      #  link: http://signals.local:8000
-      #  current_status: null
-      #  autostart: false
-      #  require_sdr: false
-    # darkice:
-    #     system_ctl_name: darkice.service
-    #     type: systemd
-    #     description: Darkice
-    #     link: null
-    #     current_status: false
-    #     autostart: false
-    #     require_sdr: false
     kismet:
         system_ctl_name: kismet.service
         type: systemd
         description: Kismet
         link: http://intrepid.local:2501
-        current_status: null
-        autostart: false
         require_sdr: false
     openwebex:
         type: docker
         container_name: owrx-mbe
         description: "Openwebex+"
         link: "http://intrepid.local:8073"
-        current_status: null
-        autostart: false
         default_sdr: '77771111153705700'
         selected_sdr: '77771111153705700'
         require_sdr: true
         multi_sdr: false
     intercept:
         type: docker
-        container_name: intercept_local
+        container_name: intercept
         description: "intercept"
         link: "http://intrepid.local:5050"
-        current_status: null
-        autostart: false
         require_sdr: true
         multi_sdr: true
         default_sdr: null
-        selected_sdr: null
     pagermon_server:
         type: docker
         container_name: pagermon
         description: Pagermon Server
         cmd_line: ""
         working_dir: "/opt/pagermon"
-        autostart: false
-        current_status: null
         require_sdr: false
         link: "http://intrepid.local:3000/"
     pagermon_client1:
@@ -64,23 +39,17 @@ services:
         description: Pagermon Client
         cmd_line: "/opt/pagermon/client/reader_alt.sh 1 152.592M"
         working_dir: /opt/pagermon/client
-        autostart: false
-        current_status: null
         require_sdr: true
         multi_sdr: false
         freq_input: "152.592M"
         default_sdr: null
-        selected_sdr: null
         link: null
     pagermon_client2:
         type: cli
         description: Pagermon Client
         cmd_line: "/opt/signals_box_ctl/pagermon_client.sh 2 929.612M"
         working_dir: /opt/pagermon/client
-        autostart: false
-        current_status: null
         default_sdr: null
-        selected_sdr: null
         require_sdr: true
         multi_sdr: false
         freq_input: "929.612M"
