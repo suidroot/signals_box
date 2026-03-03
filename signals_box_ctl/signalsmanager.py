@@ -83,9 +83,16 @@ class SignalsManager:
             with open(self.config_file, "r", encoding="utf-8") as file_handle:
                 cfg = yaml.safe_load(file_handle)
                 self.services = cfg['services']
-                self.http_base_url = cfg['http_base_url']
-                self.links = cfg['links']
-                self.buttons = cfg['buttons']
+                self.http_base_url = cfg.get('http_base_url', '')
+                self.links = cfg.get('links', [])
+                self.buttons = cfg.get('buttons', {})
+
+                if not self.http_base_url:
+                    logger.warning("Config missing 'http_base_url'; defaulting to empty string")
+                if not self.links:
+                    logger.warning("Config missing 'links'; no links will be shown")
+                if not self.buttons:
+                    logger.warning("Config missing 'buttons'; no buttons will be shown")
 
                 self.systemd_svc_mgr = SystemdServiceManager()
                 self.docker_svc_mgr = DockerService()
@@ -95,6 +102,27 @@ class SignalsManager:
         except (KeyError, TypeError) as e:
             logger.critical("Invalid config file %s: missing key %s", self.config_file, e)
             raise
+
+        # Validate required service fields; remove invalid entries rather than crashing
+        invalid_services = []
+        for svc_id, svc in self.services.items():
+            svc_type = svc.get('type')
+            if not svc_type:
+                logger.error("Service '%s' missing required field 'type'; skipping", svc_id)
+                invalid_services.append(svc_id)
+                continue
+            if 'description' not in svc:
+                logger.error("Service '%s' missing required field 'description'; skipping", svc_id)
+                invalid_services.append(svc_id)
+                continue
+            if svc_type == 'systemd' and 'system_ctl_name' not in svc:
+                logger.error("Service '%s' (systemd) missing required field 'system_ctl_name'; skipping", svc_id)
+                invalid_services.append(svc_id)
+            elif svc_type == 'docker' and 'container_name' not in svc:
+                logger.error("Service '%s' (docker) missing required field 'container_name'; skipping", svc_id)
+                invalid_services.append(svc_id)
+        for svc_id in invalid_services:
+            del self.services[svc_id]
 
         # init Service values
         for svc in self.services:
@@ -130,9 +158,10 @@ class SignalsManager:
 
         status = "unknown"
         status_data = None
-        logger.debug("Refreshing Service Status for service: %s using type %s", service_id, self.services[service_id]['type'])
+        svc_type = self.services[service_id].get('type', '')
+        logger.debug("Refreshing Service Status for service: %s using type %s", service_id, svc_type)
 
-        if self.services[service_id]['type'] == "systemd":
+        if svc_type == "systemd":
 
             status_data = self.systemd_svc_mgr.status_service(self.services[service_id]['system_ctl_name'])
 
@@ -149,7 +178,7 @@ class SignalsManager:
             else:
                 status = "unknown"
 
-        elif self.services[service_id]['type'] == "docker":
+        elif svc_type == "docker":
             status_data = self.docker_svc_mgr.status_service(self.services[service_id]['container_name'])
 
             if status_data:
@@ -160,7 +189,7 @@ class SignalsManager:
             else:
                 status = 'unknown'
 
-        elif self.services[service_id]['type'] == "cli":
+        elif svc_type == "cli":
 
             if not 'cli_status_obj' in self.services[service_id]:
                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
@@ -182,13 +211,14 @@ class SignalsManager:
         """
 
         self._sdr_cache = None  # force fresh SDR status on next page render
-        logger.debug("Calling Start for service: %s using type %s", service_id, self.services[service_id]['type'])
+        svc_type = self.services[service_id].get('type', '')
+        logger.debug("Calling Start for service: %s using type %s", service_id, svc_type)
 
-        if self.services[service_id]['type'] == "systemd":
+        if svc_type == "systemd":
             self.systemd_svc_mgr.start_service(self.services[service_id]['system_ctl_name'])
-        elif self.services[service_id]['type'] == "docker":
+        elif svc_type == "docker":
             self.docker_svc_mgr.start_service(self.services[service_id]['container_name'])
-        elif self.services[service_id]['type'] == 'cli':
+        elif svc_type == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
                 self.services[service_id]['cli_status_obj'] = CliService(service_id, self.services[service_id])
 
@@ -209,14 +239,14 @@ class SignalsManager:
         self._sdr_cache = None  # force fresh SDR status on next page render
         if service_id == 'kismet':
             self._kismet_mgr = None
-        logger.debug("Calling Stop for service: %s using type %s", service_id, self.services[service_id]['type'])
+        svc_type = self.services[service_id].get('type', '')
+        logger.debug("Calling Stop for service: %s using type %s", service_id, svc_type)
 
-
-        if self.services[service_id]['type'] == "systemd":
+        if svc_type == "systemd":
             self.systemd_svc_mgr.stop_service(self.services[service_id]['system_ctl_name'])
-        elif self.services[service_id]['type'] == "docker":
+        elif svc_type == "docker":
             self.docker_svc_mgr.stop_service(self.services[service_id]['container_name'])
-        elif self.services[service_id]['type'] == 'cli':
+        elif svc_type == 'cli':
             if not 'cli_status_obj' in self.services[service_id]:
                 logger.error("No cli service object found for %s", service_id)
             else:

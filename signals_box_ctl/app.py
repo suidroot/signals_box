@@ -129,8 +129,10 @@ def render_service_toggles(render_manager):
         status = service_statuses[service_id]
         color = statuses.get(status, "#2727F5")
 
+        description = render_manager.services[service_id].get('description', service_id)
+
         if render_manager.services[service_id].get('link'):
-            link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
+            link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{description}</a>"
 
         if render_manager.services[service_id].get('require_sdr', False):
             multi = render_manager.services[service_id].get('multi_sdr', False)
@@ -150,7 +152,7 @@ def render_service_toggles(render_manager):
         # Build Row HTML
         row = f"""
         <tr>
-            <td style="border-left:4px solid {color};padding-left:12px;"><strong>{render_manager.services[service_id]['description']}</strong></td>
+            <td style="border-left:4px solid {color};padding-left:12px;"><strong>{description}</strong></td>
             <td>{status}</td>
             <td>{sdr_selection}</td>
             <td>{freq_input}</td>

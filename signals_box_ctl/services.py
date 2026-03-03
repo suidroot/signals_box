@@ -199,7 +199,6 @@ class CliService:
         self.type: str = config["type"]
         self.description: str = config["description"]
         self.cmd_line: str = config["cmd_line"]
-        self.autostart: bool = config.get("autostart", False)
         self.require_sdr: bool = config.get("require_sdr", False)
         self.cwd: Optional[str] = config.get("working_dir", None)
 
@@ -207,7 +206,7 @@ class CliService:
         self.params: Dict[str, Any] = {k: v for k, v in config.items()
                                       if k not in {"svc_id", "type", \
                                                    "description", "cmd_line", \
-                                                    "autostart", "require_sdr"}}
+                                                   "require_sdr"}}
 
         # Internal state
         self._proc: Optional[subprocess.Popen] = None
@@ -215,11 +214,6 @@ class CliService:
 
         # Register cleanup on interpreter exit
         atexit.register(self._cleanup_on_exit)
-
-        # Auto‑start if requested
-        if self.autostart:
-            logger.info("Autostart enabled – launching service '%s'", self.svc_id)
-            self.start()
 
     # Private helpers
     def _cleanup_on_exit(self) -> None:
