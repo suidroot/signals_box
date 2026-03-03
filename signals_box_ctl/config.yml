@@ -1,21 +1,29 @@
-http_base_url: http://intrepid.local
+http_base_url: http://signals.local
 
 pid_file_location: ""
 
 services:
+    gps:
+        system_ctl_name: gpsd.service
+        type: systemd
+        autostart: true
+        require_sdr: false
+        multi_sdr: false
     kismet:
         system_ctl_name: kismet.service
         type: systemd
         description: Kismet
         link: http://intrepid.local:2501
+        autostart: false
         require_sdr: false
+        multi_sdr: false
     openwebex:
         type: docker
         container_name: owrx-mbe
         description: "Openwebex+"
         link: "http://intrepid.local:8073"
+        autostart: false
         default_sdr: '77771111153705700'
-        selected_sdr: '77771111153705700'
         require_sdr: true
         multi_sdr: false
     intercept:
@@ -23,37 +31,42 @@ services:
         container_name: intercept
         description: "intercept"
         link: "http://intrepid.local:5050"
+        autostart: false
         require_sdr: true
-        multi_sdr: true
         default_sdr: null
+        multi_sdr: true
     pagermon_server:
         type: docker
         container_name: pagermon
         description: Pagermon Server
         cmd_line: ""
         working_dir: "/opt/pagermon"
+        autostart: false
         require_sdr: false
+        multi_sdr: false
         link: "http://intrepid.local:3000/"
     pagermon_client1:
         type: cli
         description: Pagermon Client
         cmd_line: "/opt/pagermon/client/reader_alt.sh 1 152.592M"
         working_dir: /opt/pagermon/client
-        require_sdr: true
-        multi_sdr: false
+        autostart: false
         freq_input: "152.592M"
+        require_sdr: true
         default_sdr: null
         link: null
+        multi_sdr: false
     pagermon_client2:
         type: cli
         description: Pagermon Client
         cmd_line: "/opt/signals_box_ctl/pagermon_client.sh 2 929.612M"
         working_dir: /opt/pagermon/client
+        autostart: false
         default_sdr: null
         require_sdr: true
-        multi_sdr: false
         freq_input: "929.612M"
         link: null
+        multi_sdr: false
 
 buttons:
   refresh_page:
@@ -84,6 +97,15 @@ links:
   - id: vnc
     url: "vnc://intredpid.local:5901"
     name: VNC Access
-  # - id: rdp
+  - id: radioreference
+    url: "https://www.radioreference.com/"
+    name: Radioreference
+  - id: homescanner
+    url: "https://scanner.home.the-collective.net/"
+    name: "Home Rdio Scanner" 
+  - id: sigidwiki
+    url: "https://www.sigidwiki.com/"
+    name: "SigIdWiki"
+      # - id: rdp
   #   url: "rdp://signals.local"
   #   name: RDP Access
