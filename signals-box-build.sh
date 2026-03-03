@@ -103,7 +103,7 @@ create docker-compose.yml in the `/opt/pagermon/server` directory
 # https://fms.komkon.org/OWRX/#INSTALL-DOCKER
 sudo mkdir -p /opt/owrx-docker/var /opt/owrx-docker/etc /opt/owrx-docker/plugins/{receiver,map}
 # Create docker-compose.yml in /opt/owrx-docker
-
+# https://0xaf.github.io/openwebrxplus-plugins/#beginner-quickstart
 
 ### 
 sudo apt install python3-flask python3-usb python3-dbus
