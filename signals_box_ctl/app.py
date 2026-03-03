@@ -129,10 +129,10 @@ def render_service_toggles(render_manager):
         status = service_statuses[service_id]
         color = statuses.get(status, "#2727F5")
 
-        if render_manager.services[service_id]['link']:
+        if render_manager.services[service_id].get('link'):
             link = f"<a href=\"{render_manager.services[service_id]['link']}\" target=\"_blank\">{render_manager.services[service_id]['description']}</a>"
 
-        if render_manager.services[service_id]['require_sdr']:
+        if render_manager.services[service_id].get('require_sdr', False):
             multi = render_manager.services[service_id].get('multi_sdr', False)
             if 'default_sdr' in render_manager.services[service_id]:
                 sdr_selection = render_sdr_drop_list(usb_dev_list, service_id,

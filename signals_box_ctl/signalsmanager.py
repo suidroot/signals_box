@@ -281,7 +281,7 @@ class SignalsManager:
 
         logger.debug("Updating %s SDR status", len(self.services))
         for service_entry in self.services:
-            if self.services[service_entry]['require_sdr'] and \
+            if self.services[service_entry].get('require_sdr', False) and \
                self.services[service_entry]['current_status'] == 'running' and \
                self.services[service_entry]['selected_sdr']:
                 selected = self.services[service_entry]['selected_sdr']
