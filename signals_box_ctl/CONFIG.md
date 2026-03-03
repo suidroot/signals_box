@@ -10,10 +10,10 @@ Signals Box requires two YAML files in the working directory at startup: `config
 
 | Key | Required | Description |
 |-----|----------|-------------|
-| `http_base_url` | Yes | Base URL of the host (e.g. `http://hostname.local`). Used as a reference value; not currently interpolated automatically. |
+| `http_base_url` | No | Base URL of the host (e.g. `http://hostname.local`). Defaults to empty string with a warning if omitted. |
 | `services` | Yes | Map of service entries keyed by `service_id`. |
-| `buttons` | Yes | Map of button entries keyed by button name. |
-| `links` | Yes | List of link entries shown in the links panel. |
+| `buttons` | No | Map of button entries keyed by button name. Defaults to empty (no buttons shown) with a warning if omitted. |
+| `links` | No | List of link entries shown in the links panel. Defaults to empty (no links shown) with a warning if omitted. |
 | `pid_file_location` | No | Path for a PID file. Not currently used by the application. |
 
 ---
@@ -23,6 +23,8 @@ Signals Box requires two YAML files in the working directory at startup: `config
 Each key under `services` is a **service ID** (e.g. `kismet`, `openwebex`). The value is a dict with the fields below.
 
 #### Fields common to all service types
+
+> **Validation** — Services missing required fields are skipped at load time (logged at ERROR level) rather than crashing the application.
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
@@ -80,7 +82,6 @@ Manages a subprocess launched directly by the app.
 |-------|----------|---------|-------------|
 | `cmd_line` | Yes | — | Command string to execute. Supports `<key>` placeholder substitution using other fields in the same service entry (e.g. `<freq_input>` is replaced with the current value of `freq_input`). Parsed with shell-like quoting rules. |
 | `working_dir` | No | `null` | Working directory for the process. |
-| `autostart` | No | `false` | Start the process automatically when the app starts. |
 
 Any extra fields in a `cli` service entry are available as placeholder values in `cmd_line`.
 
