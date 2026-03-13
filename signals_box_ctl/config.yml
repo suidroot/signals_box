@@ -28,6 +28,9 @@ sdr_ids:
   - vid: "0x1d50"
     pid: "0x60a1"
     name: "AirSpy"
+  - vid: "0x03eb"
+    pid: "0x800c"
+    name: "AirSpy HF"
 
 pid_file_location: ""
 
