@@ -86,6 +86,10 @@ class SignalsManager:
                 self.http_base_url = cfg.get('http_base_url', '')
                 self.links = cfg.get('links', [])
                 self.buttons = cfg.get('buttons', {})
+                self.sdr_ids = {
+                    (int(e['vid'], 16), int(e['pid'], 16)): e['name']
+                    for e in cfg.get('sdr_ids', [])
+                }
 
                 if not self.http_base_url:
                     logger.warning("Config missing 'http_base_url'; defaulting to empty string")
@@ -274,7 +278,7 @@ class SignalsManager:
                 return self._sdr_cache
 
             logger.debug("Getting all SDRs")
-            usb_dev = UsbDevices()
+            usb_dev = UsbDevices(self.sdr_ids)
             self.sdr_data = usb_dev.list_rtlsdr_devices()
             self.update_sdr_status()
             self._sdr_cache = self.sdr_data

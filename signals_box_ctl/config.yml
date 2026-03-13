@@ -1,5 +1,34 @@
 http_base_url: http://signals.local
 
+sdr_ids:
+  - vid: "0x0bda"
+    pid: "0x8176"
+    name: "RTL2832U (generic RTL-SDR)"
+  - vid: "0x0bda"
+    pid: "0x8177"
+    name: "RTL2832U (generic RTL-SDR)"
+  - vid: "0x1d50"
+    pid: "0x6067"
+    name: "CubicSDR (Cubic Research)"
+  - vid: "0x1d50"
+    pid: "0x6079"
+    name: "CubicSDR (Cubic Research) - newer firmware"
+  - vid: "0x054c"
+    pid: "0x06e5"
+    name: "Xunlong (RTL-SDR) - USB-3.0 adapter"
+  - vid: "0x0bda"
+    pid: "0x2832"
+    name: "RTL2832U Generic"
+  - vid: "0x0403"
+    pid: "0x601f"
+    name: "LimeSDR Mini"
+  - vid: "0x0bda"
+    pid: "0x2838"
+    name: "RTLSDRBlog v4"
+  - vid: "0x1d50"
+    pid: "0x60a1"
+    name: "AirSpy"
+
 pid_file_location: ""
 
 services:
